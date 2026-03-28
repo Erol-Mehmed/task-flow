@@ -4,18 +4,17 @@ using task_flow.Data;
 
 DotNetEnv.Env.Load();
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Build connection string from .env
-var host = Environment.GetEnvironmentVariable("DB_HOST");
-var port = Environment.GetEnvironmentVariable("DB_PORT");
-var db = Environment.GetEnvironmentVariable("DB_NAME");
-var user = Environment.GetEnvironmentVariable("DB_USER");
-var pass = Environment.GetEnvironmentVariable("DB_PASSWORD");
+// Read from .env
+var host = Environment.GetEnvironmentVariable("DB_HOST") ?? "";
+var port = Environment.GetEnvironmentVariable("DB_PORT") ?? "";
+var db = Environment.GetEnvironmentVariable("DB_NAME") ?? "";
+var user = Environment.GetEnvironmentVariable("DB_USER") ?? "";
+var pass = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "";
 
 var connectionString = $"Host={host};Port={port};Database={db};Username={user};Password={pass}";
 
-// Add services to the container.
+var builder = WebApplication.CreateBuilder(args);
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
   options.UseNpgsql(connectionString));
 
@@ -29,7 +28,6 @@ builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-// Configure pipeline
 if (app.Environment.IsDevelopment())
 {
   app.UseMigrationsEndPoint();
