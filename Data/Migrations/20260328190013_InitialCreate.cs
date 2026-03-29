@@ -60,13 +60,13 @@ namespace task_flow.Data.Migrations
                 oldMaxLength: 256,
                 oldNullable: true);
 
-            migrationBuilder.AlterColumn<bool>(
-                name: "TwoFactorEnabled",
-                table: "AspNetUsers",
-                type: "boolean",
-                nullable: false,
-                oldClrType: typeof(int),
-                oldType: "INTEGER");
+            migrationBuilder.Sql(@"
+                ALTER TABLE ""AspNetUsers""
+                ALTER COLUMN ""TwoFactorEnabled"" TYPE boolean USING ""TwoFactorEnabled""::boolean,
+                ALTER COLUMN ""PhoneNumberConfirmed"" TYPE boolean USING ""PhoneNumberConfirmed""::boolean,
+                ALTER COLUMN ""LockoutEnabled"" TYPE boolean USING ""LockoutEnabled""::boolean,
+                ALTER COLUMN ""EmailConfirmed"" TYPE boolean USING ""EmailConfirmed""::boolean;
+            ");
 
             migrationBuilder.AlterColumn<string>(
                 name: "SecurityStamp",
@@ -76,14 +76,6 @@ namespace task_flow.Data.Migrations
                 oldClrType: typeof(string),
                 oldType: "TEXT",
                 oldNullable: true);
-
-            migrationBuilder.AlterColumn<bool>(
-                name: "PhoneNumberConfirmed",
-                table: "AspNetUsers",
-                type: "boolean",
-                nullable: false,
-                oldClrType: typeof(int),
-                oldType: "INTEGER");
 
             migrationBuilder.AlterColumn<string>(
                 name: "PhoneNumber",
@@ -124,31 +116,12 @@ namespace task_flow.Data.Migrations
                 oldType: "TEXT",
                 oldMaxLength: 256,
                 oldNullable: true);
-
-            migrationBuilder.AlterColumn<DateTimeOffset>(
-                name: "LockoutEnd",
-                table: "AspNetUsers",
-                type: "timestamp with time zone",
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "TEXT",
-                oldNullable: true);
-
-            migrationBuilder.AlterColumn<bool>(
-                name: "LockoutEnabled",
-                table: "AspNetUsers",
-                type: "boolean",
-                nullable: false,
-                oldClrType: typeof(int),
-                oldType: "INTEGER");
-
-            migrationBuilder.AlterColumn<bool>(
-                name: "EmailConfirmed",
-                table: "AspNetUsers",
-                type: "boolean",
-                nullable: false,
-                oldClrType: typeof(int),
-                oldType: "INTEGER");
+            
+            migrationBuilder.Sql(@"
+            ALTER TABLE ""AspNetUsers""
+            ALTER COLUMN ""LockoutEnd"" TYPE timestamp with time zone
+            USING ""LockoutEnd""::timestamptz;
+            ");
 
             migrationBuilder.AlterColumn<string>(
                 name: "Email",
@@ -400,14 +373,6 @@ namespace task_flow.Data.Migrations
                 oldMaxLength: 256,
                 oldNullable: true);
 
-            migrationBuilder.AlterColumn<int>(
-                name: "TwoFactorEnabled",
-                table: "AspNetUsers",
-                type: "INTEGER",
-                nullable: false,
-                oldClrType: typeof(bool),
-                oldType: "boolean");
-
             migrationBuilder.AlterColumn<string>(
                 name: "SecurityStamp",
                 table: "AspNetUsers",
@@ -463,15 +428,6 @@ namespace task_flow.Data.Migrations
                 oldClrType: typeof(string),
                 oldType: "character varying(256)",
                 oldMaxLength: 256,
-                oldNullable: true);
-
-            migrationBuilder.AlterColumn<string>(
-                name: "LockoutEnd",
-                table: "AspNetUsers",
-                type: "TEXT",
-                nullable: true,
-                oldClrType: typeof(DateTimeOffset),
-                oldType: "timestamp with time zone",
                 oldNullable: true);
 
             migrationBuilder.AlterColumn<int>(
