@@ -72,9 +72,15 @@ namespace task_flow.Areas.Identity.Pages.Account
     /// </summary>
     public class InputModel
     {
-      [Required] [MaxLength(100)] public string FirstName { get; set; }
+      [Required]
+      [MaxLength(100)]
+      [Display(Name = "First Name")]
+      public string FirstName { get; set; }
 
-      [Required] [MaxLength(100)] public string LastName { get; set; }
+      [Required]
+      [MaxLength(100)]
+      [Display(Name = "Last Name")]
+      public string LastName { get; set; }
 
       /// <summary>
       ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
