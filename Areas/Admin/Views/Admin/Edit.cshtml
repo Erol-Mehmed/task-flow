@@ -1,0 +1,17 @@
+@model ApplicationUser
+
+<form method="post">
+  <input type="hidden" name="id" value="@Model.Id"/>
+
+  <label>Role</label>
+  <select name="role">
+    @foreach (var role in ViewBag.Roles)
+    {
+      <option value="@role" selected="@(role == ViewBag.UserRole)">
+        @role
+      </option>
+    }
+  </select>
+
+  <button type="submit">Save</button>
+</form>

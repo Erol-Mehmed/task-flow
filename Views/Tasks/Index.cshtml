@@ -1,0 +1,23 @@
+@model List<TaskItem>
+
+<a asp-action="Create">Create Task</a>
+
+<table class="table">
+  <tr>
+    <th>Title</th>
+    <th>Status</th>
+    <th></th>
+  </tr>
+
+  @foreach (var t in Model)
+  {
+    <tr>
+      <td>@t.Title</td>
+      <td>@t.Status</td>
+      <td>
+        <a asp-action="Edit" asp-route-id="@t.Id">Edit</a> |
+        <a asp-action="Delete" asp-route-id="@t.Id">Delete</a>
+      </td>
+    </tr>
+  }
+</table>

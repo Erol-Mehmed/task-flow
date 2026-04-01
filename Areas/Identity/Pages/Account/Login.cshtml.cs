@@ -127,10 +127,13 @@ namespace task_flow.Areas.Identity.Pages.Account
 
           var user = await _userManager.FindByEmailAsync(Input.Email);
 
+          if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            return LocalRedirect(returnUrl);
+
           if (user != null && await _userManager.IsInRoleAsync(user, "Admin"))
             return RedirectToAction("Index", "Admin", new { area = "Admin" });
 
-          return LocalRedirect(returnUrl);
+          return RedirectToAction("Index", "Home");
         }
 
         if (result.RequiresTwoFactor)
