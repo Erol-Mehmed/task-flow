@@ -1,8 +1,52 @@
-﻿@{
+﻿@model IEnumerable<task_flow.Models.TaskItem>
+
+@{
   ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-  <h1 class="display-4">Welcome</h1>
-  <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<h2 class="mb-4">Task Board</h2>
+
+<form method="get" class="row mb-4">
+  <div class="col">
+    <input name="search" class="form-control" placeholder="Search..."/>
+  </div>
+
+  <div class="col">
+    <select name="status" class="form-control">
+      <option value="">All</option>
+      <option value="Todo">Todo</option>
+      <option value="InProgress">In Progress</option>
+      <option value="Done">Done</option>
+    </select>
+  </div>
+
+  <div class="col">
+    <button type="submit" class="btn btn-primary">Filter</button>
+  </div>
+</form>
+
+<div class="row">
+  <div class="col-md-4">
+    <h5>Todo</h5>
+    @foreach (var t in Model.Where(x => x.Status == "Todo"))
+    {
+      <div class="card mb-2 p-2">@t.Title</div>
+    }
+  </div>
+
+  <div class="col-md-4">
+    <h5>In Progress</h5>
+    @foreach (var t in Model.Where(x => x.Status == "InProgress"))
+    {
+      <div class="card mb-2 p-2">@t.Title</div>
+    }
+  </div>
+
+  <div class="col-md-4">
+    <h5>Done</h5>
+    @foreach (var t in Model.Where(x => x.Status == "Done"))
+    {
+      <div class="card mb-2 p-2">@t.Title</div>
+    }
+  </div>
 </div>

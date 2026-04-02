@@ -45,17 +45,6 @@ public class TaskController : Controller
   [ValidateAntiForgeryToken]
   public async Task<IActionResult> Create(TaskItem task)
   {
-    foreach (var error in ModelState)
-    {
-      var key = error.Key;
-      var errors = error.Value.Errors;
-
-      foreach (var e in errors)
-      {
-        Console.WriteLine($"{key}: {e.ErrorMessage}");
-      }
-    }
-    
     if (!ModelState.IsValid)
       return View(task);
 
@@ -110,6 +99,7 @@ public class TaskController : Controller
 
     existingTask.Title = task.Title;
     existingTask.Description = task.Description;
+    existingTask.Status = task.Status;
 
     await _context.SaveChangesAsync();
 
