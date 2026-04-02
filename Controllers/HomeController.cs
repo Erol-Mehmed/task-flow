@@ -23,7 +23,7 @@ public class HomeController : Controller
     _logger = logger;
   }
 
-  public async Task<IActionResult> Index(string? search, string? status)
+  public async Task<IActionResult> Index(string? search, string? status, int page = 1)
   {
     var user = await _userManager.GetUserAsync(User);
     if (user == null)
@@ -37,7 +37,17 @@ public class HomeController : Controller
     if (!string.IsNullOrWhiteSpace(status))
       query = query.Where(t => t.Status == status);
 
-    var tasks = await query.ToListAsync();
+    int pageSize = 6;
+
+    var totalItems = await query.CountAsync();
+
+    var tasks = await query
+      .Skip((page - 1) * pageSize)
+      .Take(pageSize)
+      .ToListAsync();
+
+    ViewBag.CurrentPage = page;
+    ViewBag.TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
 
     return View(tasks);
   }
