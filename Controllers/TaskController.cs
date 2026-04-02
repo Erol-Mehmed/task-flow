@@ -11,9 +11,9 @@ namespace task_flow.Controllers;
 public class TaskController : Controller
 {
   private readonly ApplicationDbContext _context;
-  private readonly UserManager<IdentityUser> _userManager;
+  private readonly UserManager<ApplicationUser> _userManager;
 
-  public TaskController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+  public TaskController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
   {
     _context = context;
     _userManager = userManager;
@@ -45,6 +45,17 @@ public class TaskController : Controller
   [ValidateAntiForgeryToken]
   public async Task<IActionResult> Create(TaskItem task)
   {
+    foreach (var error in ModelState)
+    {
+      var key = error.Key;
+      var errors = error.Value.Errors;
+
+      foreach (var e in errors)
+      {
+        Console.WriteLine($"{key}: {e.ErrorMessage}");
+      }
+    }
+    
     if (!ModelState.IsValid)
       return View(task);
 

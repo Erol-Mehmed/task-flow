@@ -15,9 +15,8 @@ public class TaskItem
 
   [MaxLength(20)]
   public string Status { get; set; } = "Todo";
-
-  [Required]
-  [MaxLength(50)]
-  public required string UserId { get; set; }
-  [Required] public required ApplicationUser User { get; set; }
+  
+  [MaxLength(36)]
+  public string? UserId { get; set; }
+  public ApplicationUser? User { get; set; }
 }

@@ -4,10 +4,10 @@
   ViewData["Title"] = "My Tasks";
 }
 
-<h2>@ViewData["Title"]</h2>
+<h2>Tasks</h2>
 
 <p>
-  <a asp-action="Create">Create New Task</a>
+  <a asp-action="Create" class="btn btn-primary">Create New Task</a>
 </p>
 
 <table class="table">
@@ -15,6 +15,7 @@
   <tr>
     <th>Title</th>
     <th>Description</th>
+    <th>Status</th>
     <th></th>
   </tr>
   </thead>
@@ -24,9 +25,42 @@
     <tr>
       <td>@item.Title</td>
       <td>@item.Description</td>
+      <td>@item.Status</td>
       <td>
-        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
+
+        <!-- Delete button -->
+        <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal-@item.Id">
+          Delete
+        </button>
+
+        <!-- Modal -->
+        <div class="modal fade" id="deleteModal-@item.Id" tabindex="-1">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Delete Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+
+              <div class="modal-body">
+                Are you sure you want to delete "<strong>@item.Title</strong>"?
+              </div>
+
+              <div class="modal-footer">
+                <form asp-action="Delete" method="post">
+                  @Html.AntiForgeryToken()
+                  <input type="hidden" name="id" value="@item.Id"/>
+                  <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </td>
     </tr>
   }
