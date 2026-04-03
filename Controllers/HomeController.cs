@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using task_flow.Data;
 using task_flow.Models;
+using System.Diagnostics;
 
 namespace task_flow.Controllers;
 
@@ -20,6 +21,19 @@ public class HomeController : Controller
     _context = context;
     _userManager = userManager;
     _logger = logger;
+  }
+
+  public IActionResult Error()
+  {
+    var requestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
+    return View(new ErrorViewModel { RequestId = requestId });
+  }
+
+  [Route("Home/NotFound")]
+  public IActionResult NotFoundPage()
+  {
+    Response.StatusCode = 404;
+    return View("NotFound");
   }
 
   public async Task<IActionResult> Index(string? search, string? status, int page = 1)

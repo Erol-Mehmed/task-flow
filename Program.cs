@@ -47,6 +47,7 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseStatusCodePagesWithReExecute("/Home/NotFound");
 
 app.MapControllerRoute(
   name: "areas",
