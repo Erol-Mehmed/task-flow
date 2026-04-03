@@ -118,11 +118,11 @@ namespace task_flow.Areas.Identity.Pages.Account.Manage
                 return Page();
             }
 
-            await _signInManager.RefreshSignInAsync(user);
-            _logger.LogInformation("User changed their password successfully.");
-            StatusMessage = "Your password has been changed.";
+            await _signInManager.SignOutAsync();
+            _logger.LogInformation("User changed their password and was signed out.");
+            StatusMessage = "Password changed successfully. Please sign in again.";
 
-            return RedirectToPage();
+            return RedirectToPage("/Account/Login", new { area = "Identity" });
         }
     }
 }
