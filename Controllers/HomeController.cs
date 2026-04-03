@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -36,6 +35,8 @@ public class HomeController : Controller
 
     if (!string.IsNullOrWhiteSpace(status))
       query = query.Where(t => t.Status == status);
+
+    query = query.OrderBy(t => t.Id);
 
     int pageSize = 6;
 
