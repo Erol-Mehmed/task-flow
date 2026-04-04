@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Moq;
 using task_flow.Areas.Admin.Controllers;
+using task_flow.Areas.Admin.Models;
 using task_flow.Models;
 using task_flow.Tests.Helpers;
 
@@ -47,9 +49,11 @@ public class AdminControllerTests
         controller.ControllerContext = MockHelper.CreateControllerContext("admin", isAdmin: true);
 
         var result = await controller.Edit("u1") as ViewResult;
+        var model = result?.Model as AdminUserEditViewModel;
 
-        Assert.Equal(user, result?.Model);
-        Assert.Equal("User", controller.ViewBag.UserRole);
+        Assert.NotNull(model);
+        Assert.Equal("u1", model?.UserId);
+        Assert.Equal("User", model?.Role);
     }
 
     [Fact]
@@ -70,7 +74,13 @@ public class AdminControllerTests
         var controller = new AdminController(mockUserMgr.Object);
         controller.ControllerContext = MockHelper.CreateControllerContext("admin", isAdmin: true);
 
-        var result = await controller.Edit("u1", "Admin") as RedirectToActionResult;
+        var model = new AdminUserEditViewModel
+        {
+            UserId = "u1",
+            Role = "Admin"
+        };
+
+        var result = await controller.Edit(model) as RedirectToActionResult;
 
         Assert.Equal("Users", result?.ActionName);
         mockUserMgr.Verify(x => x.RemoveFromRolesAsync(user, It.IsAny<IEnumerable<string>>()), Times.Once);
@@ -89,12 +99,27 @@ public class AdminControllerTests
         mockUserMgr.Setup(x => x.DeleteAsync(user)).ReturnsAsync(IdentityResult.Success);
 
         var controller = new AdminController(mockUserMgr.Object);
-        controller.ControllerContext = MockHelper.CreateControllerContext("admin", isAdmin: true);
+        controller.ControllerContext = MockHelper.CreateControllerContext("admin-id", isAdmin: true);
 
         var result = await controller.Delete("u1") as RedirectToActionResult;
 
         Assert.Equal("Users", result?.ActionName);
         mockUserMgr.Verify(x => x.DeleteAsync(user), Times.Once);
+    }
+
+    [Fact]
+    public async Task Delete_WhenTargetIsCurrentUser_DoesNotDeleteAndRedirectsWithError()
+    {
+        var mockUserMgr = MockHelper.MockUserManager();
+        var controller = new AdminController(mockUserMgr.Object);
+        controller.ControllerContext = MockHelper.CreateControllerContext("admin-id", isAdmin: true);
+        controller.TempData = new TempDataDictionary(controller.HttpContext, Mock.Of<ITempDataProvider>());
+
+        var result = await controller.Delete("admin-id") as RedirectToActionResult;
+
+        Assert.Equal("Users", result?.ActionName);
+        Assert.Equal("You cannot delete your own account.", controller.TempData["ErrorMessage"]);
+        mockUserMgr.Verify(x => x.DeleteAsync(It.IsAny<ApplicationUser>()), Times.Never);
     }
 }
 

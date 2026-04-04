@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using task_flow.Data;
 using task_flow.Models;
@@ -25,7 +26,8 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => { options.SignIn
   .AddRoles<IdentityRole>()
   .AddEntityFrameworkStores<ApplicationDbContext>();
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+  options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()));
 builder.Services.AddRazorPages();
 
 var app = builder.Build();

@@ -1,17 +1,30 @@
-@model ApplicationUser
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model task_flow.Areas.Admin.Models.AdminUserEditViewModel
 
-<form method="post">
-  <input type="hidden" name="id" value="@Model.Id"/>
+@{
+  ViewData["Title"] = "Edit User";
+}
 
-  <label>Role</label>
-  <select name="role">
-    @foreach (var role in ViewBag.Roles)
-    {
-      <option value="@role" selected="@(role == ViewBag.UserRole)">
-        @role
-      </option>
-    }
-  </select>
+<h2 class="mb-4">Edit User</h2>
 
-  <button type="submit">Save</button>
-</form>
+<div class="card shadow-sm app-card">
+  <div class="card-body">
+    <p class="text-muted mb-3">@Model.Email</p>
+
+    <form method="post" class="vstack gap-3">
+      @Html.AntiForgeryToken()
+      <input asp-for="UserId" type="hidden"/>
+
+      <div>
+        <label asp-for="Role" class="form-label">Role</label>
+        <select asp-for="Role" asp-items="@(new SelectList(Model.AvailableRoles))" class="form-select"></select>
+        <span asp-validation-for="Role" class="text-danger"></span>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a asp-action="Users" class="btn btn-outline-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
