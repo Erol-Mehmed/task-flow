@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # 
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "task-flow", "task-flow.csproj", "{DF72472E-2AF0-41F1-AD14-136ECF640616}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "task-flow.Tests", "..\task-flow.Tests\task-flow.Tests.csproj", "{BEC58E31-E9D9-4945-9832-5FFE168545C7}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{02A468DC-933E-4D5D-9D22-4B9FB79214E3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "task-flow.Tests", "tests\task-flow.Tests\task-flow.Tests.csproj", "{07227B97-6B1A-4D31-A536-F2E622969A93}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,9 +17,12 @@ Global
 		{DF72472E-2AF0-41F1-AD14-136ECF640616}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF72472E-2AF0-41F1-AD14-136ECF640616}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DF72472E-2AF0-41F1-AD14-136ECF640616}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BEC58E31-E9D9-4945-9832-5FFE168545C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BEC58E31-E9D9-4945-9832-5FFE168545C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BEC58E31-E9D9-4945-9832-5FFE168545C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BEC58E31-E9D9-4945-9832-5FFE168545C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07227B97-6B1A-4D31-A536-F2E622969A93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07227B97-6B1A-4D31-A536-F2E622969A93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07227B97-6B1A-4D31-A536-F2E622969A93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07227B97-6B1A-4D31-A536-F2E622969A93}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{07227B97-6B1A-4D31-A536-F2E622969A93} = {02A468DC-933E-4D5D-9D22-4B9FB79214E3}
 	EndGlobalSection
 EndGlobal
