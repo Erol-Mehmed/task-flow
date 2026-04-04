@@ -108,7 +108,7 @@ public class TaskController : Controller
 
   [HttpPost]
   [ValidateAntiForgeryToken]
-  public async Task<IActionResult> Delete(int id)
+  public async Task<IActionResult> Delete(int id, string? returnUrl)
   {
     var task = await _context.Task.FindAsync(id);
     if (task == null)
@@ -124,6 +124,9 @@ public class TaskController : Controller
 
     _context.Task.Remove(task);
     await _context.SaveChangesAsync();
+
+    if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+      return LocalRedirect(returnUrl);
 
     return RedirectToAction(nameof(Index));
   }

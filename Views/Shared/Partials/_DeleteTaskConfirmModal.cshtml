@@ -14,6 +14,7 @@
         <form id="deleteTaskForm" asp-controller="Task" asp-action="Delete" method="post">
           @Html.AntiForgeryToken()
           <input type="hidden" id="deleteTaskId" name="id" />
+          <input type="hidden" id="deleteReturnUrl" name="returnUrl" />
           <button type="submit" class="btn btn-danger">Delete</button>
         </form>
 
@@ -36,6 +37,11 @@
 
       taskIdInput.value = taskId || "";
       taskName.innerText = taskTitle || "this task";
+
+      const returnUrlInput = document.getElementById("deleteReturnUrl");
+      if (returnUrlInput) {
+        returnUrlInput.value = window.location.pathname + window.location.search;
+      }
 
       const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
       modal.show();
