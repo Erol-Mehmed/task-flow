@@ -8,15 +8,27 @@
   </tr>
   </thead>
   <tbody>
-  @foreach (var t in Model)
+  @if (Model != null && Model.Any())
   {
-    <tr style="cursor:pointer"
-        data-bs-toggle="modal"
-        data-bs-target="#taskModal"
-        data-title="@t.Title"
-        data-status="@t.Status">
-      <td>@t.Title</td>
-      <td>@t.Status</td>
+    @foreach (var t in Model)
+    {
+      <tr data-bs-toggle="modal"
+          data-bs-target="#taskModal"
+          data-task-id="@t.Id"
+          data-task-title="@t.Title"
+          data-task-description="@t.Description"
+          style="cursor:pointer"
+          onclick="openTask(this.dataset.taskTitle, this.dataset.taskDescription, this.dataset.taskId)">
+
+        <td>@t.Title</td>
+        <td>@t.Status</td>
+      </tr>
+    }
+  }
+  else
+  {
+    <tr>
+      <td colspan="2" class="text-center text-muted">No tasks found.</td>
     </tr>
   }
   </tbody>

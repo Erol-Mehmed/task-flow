@@ -1,0 +1,45 @@
+<div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteTaskModalLabel">Delete Task</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        Are you sure you want to delete "<strong id="deleteTaskName"></strong>"?
+      </div>
+
+      <div class="modal-footer">
+        <form id="deleteTaskForm" asp-controller="Task" asp-action="Delete" method="post">
+          @Html.AntiForgeryToken()
+          <input type="hidden" id="deleteTaskId" name="id" />
+          <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.taskDeleteConfirm = {
+    open: function (taskId, taskTitle) {
+      const taskIdInput = document.getElementById("deleteTaskId");
+      const taskName = document.getElementById("deleteTaskName");
+      const modalElement = document.getElementById("deleteTaskModal");
+
+      if (!taskIdInput || !taskName || !modalElement) {
+        return;
+      }
+
+      taskIdInput.value = taskId || "";
+      taskName.innerText = taskTitle || "this task";
+
+      const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+      modal.show();
+    }
+  };
+</script>
+

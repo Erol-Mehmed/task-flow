@@ -2,9 +2,10 @@
 
 @{
   ViewData["Title"] = "Home Page";
+  var selectedStatus = Context.Request.Query["status"].ToString();
 }
 
-@if (User?.Identity?.IsAuthenticated != true)
+@if (User.Identity?.IsAuthenticated != true)
 {
   <div class="text-center mt-5">
     <h1>Welcome to TaskFlow</h1>
@@ -29,9 +30,9 @@
   <div class="col">
     <select name="status" class="form-control">
       <option value="">All</option>
-      <option value="Todo" selected="@(Context.Request.Query["status"] == "Todo")">Todo</option>
-      <option value="InProgress" selected="@(Context.Request.Query["status"] == "InProgress")">In Progress</option>
-      <option value="Done" selected="@(Context.Request.Query["status"] == "Done")">Done</option>
+      <option value="Todo" selected="@(selectedStatus == "Todo" ? "selected" : null)">Todo</option>
+      <option value="InProgress" selected="@(selectedStatus == "InProgress" ? "selected" : null)">In Progress</option>
+      <option value="Done" selected="@(selectedStatus == "Done" ? "selected" : null)">Done</option>
     </select>
   </div>
 
@@ -41,18 +42,94 @@
 </form>
 
 @await Html.PartialAsync("~/Views/Shared/Partials/Home/_TaskTable.cshtml", Model)
+
 @await Html.PartialAsync("~/Views/Shared/Partials/Home/_TaskModal.cshtml")
+@await Html.PartialAsync("~/Views/Shared/Partials/_DeleteTaskConfirmModal.cshtml")
 
 <nav class="mt-4">
   <ul class="pagination">
     @for (int i = 1; i <= (int)(ViewBag.TotalPages ?? 1); i++)
     {
-      <li class="page-item @(i == (int)(ViewBag.CurrentPage ?? 1) ? "active" : "")">
+      var pageNumber = i;
+      <li class="page-item @(pageNumber == (int)(ViewBag.CurrentPage ?? 1) ? "active" : "")">
         <a class="page-link"
-           href="?page=@i&search=@Context.Request.Query["search"]&status=@Context.Request.Query["status"]">
-          @i
+           asp-controller="Home"
+           asp-action="Index"
+           asp-route-page="@pageNumber"
+           asp-route-search="@Context.Request.Query["search"]"
+           asp-route-status="@selectedStatus">
+          @pageNumber
         </a>
       </li>
     }
   </ul>
 </nav>
+
+<script>
+  const editTaskBaseUrl = '@Url.Action("Edit", "Task")';
+  let fullDescription = "";
+  let isExpanded = false;
+  const maxLength = 200;
+  let currentTaskId = null;
+
+  function openTask(title, description, id) {
+    document.getElementById("modalTitle").innerText = title || "";
+
+    fullDescription = description || "";
+    isExpanded = false;
+    currentTaskId = id;
+
+    updateDescription();
+  }
+
+  function updateDescription() {
+    const descEl = document.getElementById("modalDescription");
+    const btn = document.getElementById("readMoreBtn");
+
+    if (fullDescription.length <= maxLength) {
+      descEl.innerText = fullDescription;
+      btn.style.display = "none";
+      return;
+    }
+
+    if (isExpanded) {
+      descEl.innerText = fullDescription;
+      btn.innerText = "Show less";
+    } else {
+      descEl.innerText = fullDescription.substring(0, maxLength) + "...";
+      btn.innerText = "Read more";
+    }
+
+    btn.style.display = "inline";
+  }
+
+  function toggleDescription() {
+    isExpanded = !isExpanded;
+    updateDescription();
+  }
+
+  function editTask() {
+    if (!currentTaskId) {
+      return;
+    }
+
+    window.location.href = editTaskBaseUrl + "/" + currentTaskId;
+  }
+
+  function deleteTask() {
+    if (!currentTaskId) {
+      return;
+    }
+
+    const taskModalElement = document.getElementById("taskModal");
+    const taskModal = bootstrap.Modal.getInstance(taskModalElement);
+    if (taskModal) {
+      taskModal.hide();
+    }
+
+    const currentTaskTitle = document.getElementById("modalTitle")?.innerText || "";
+    if (window.taskDeleteConfirm && typeof window.taskDeleteConfirm.open === "function") {
+      window.taskDeleteConfirm.open(currentTaskId, currentTaskTitle);
+    }
+  }
+</script>

@@ -29,40 +29,17 @@
       <td>
         <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
 
-        <!-- Delete button -->
-        <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal-@item.Id">
+        <button type="button"
+                class="btn btn-sm btn-danger"
+                data-task-id="@item.Id"
+                data-task-title="@item.Title"
+                onclick="taskDeleteConfirm.open(this.dataset.taskId, this.dataset.taskTitle)">
           Delete
         </button>
-
-        <!-- Modal -->
-        <div class="modal fade" id="deleteModal-@item.Id" tabindex="-1">
-          <div class="modal-dialog">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">Delete Task</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-              </div>
-
-              <div class="modal-body">
-                Are you sure you want to delete "<strong>@item.Title</strong>"?
-              </div>
-
-              <div class="modal-footer">
-                <form asp-action="Delete" method="post">
-                  @Html.AntiForgeryToken()
-                  <input type="hidden" name="id" value="@item.Id"/>
-                  <button type="submit" class="btn btn-danger">Delete</button>
-                </form>
-
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
       </td>
     </tr>
   }
   </tbody>
 </table>
+
+@await Html.PartialAsync("~/Views/Shared/Partials/_DeleteTaskConfirmModal.cshtml")
