@@ -9,6 +9,7 @@ public static class DbSeeder
   {
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+    var context = services.GetRequiredService<ApplicationDbContext>();
 
     string[] roles = ["Admin", "User"];
 
@@ -41,7 +42,20 @@ public static class DbSeeder
       if (result.Succeeded)
       {
         await userManager.AddToRoleAsync(user, "Admin");
+        adminUser = user;
       }
+    }
+
+    // Seed some tasks for the admin user
+    if (!context.Task.Any() && adminUser != null)
+    {
+      context.Task.AddRange(
+        new TaskItem { Title = "First Task", UserId = adminUser.Id },
+        new TaskItem { Title = "Second Task", UserId = adminUser.Id },
+        new TaskItem { Title = "Third Task", UserId = adminUser.Id }
+      );
+
+      await context.SaveChangesAsync();
     }
   }
 

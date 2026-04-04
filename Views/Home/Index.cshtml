@@ -4,8 +4,6 @@
   ViewData["Title"] = "Home Page";
 }
 
-@* ----------------------- Unauthenticated User View ------------------ *@
-
 @if (User?.Identity?.IsAuthenticated != true)
 {
   <div class="text-center mt-5">
@@ -18,8 +16,6 @@
 
   return;
 }
-
-@* ---------------------- Authenticated User View ------------------ *@
 
 <h2 class="mb-4">Task Board</h2>
 
@@ -44,42 +40,19 @@
   </div>
 </form>
 
-<div class="row">
-  <div class="col-md-4">
-    <h5>Todo</h5>
-    @foreach (var t in Model.Where(x => x.Status == "Todo"))
-    {
-      <div class="card mb-2 p-2">@t.Title</div>
-    }
-  </div>
+@await Html.PartialAsync("~/Views/Shared/Partials/Home/_TaskTable.cshtml", Model)
+@await Html.PartialAsync("~/Views/Shared/Partials/Home/_TaskModal.cshtml")
 
-  <div class="col-md-4">
-    <h5>In Progress</h5>
-    @foreach (var t in Model.Where(x => x.Status == "InProgress"))
+<nav class="mt-4">
+  <ul class="pagination">
+    @for (int i = 1; i <= (int)(ViewBag.TotalPages ?? 1); i++)
     {
-      <div class="card mb-2 p-2">@t.Title</div>
+      <li class="page-item @(i == (int)(ViewBag.CurrentPage ?? 1) ? "active" : "")">
+        <a class="page-link"
+           href="?page=@i&search=@Context.Request.Query["search"]&status=@Context.Request.Query["status"]">
+          @i
+        </a>
+      </li>
     }
-  </div>
-
-  <div class="col-md-4">
-    <h5>Done</h5>
-    @foreach (var t in Model.Where(x => x.Status == "Done"))
-    {
-      <div class="card mb-2 p-2">@t.Title</div>
-    }
-  </div>
-
-  <nav class="mt-4">
-    <ul class="pagination">
-      @for (int i = 1; i <= (int)(ViewBag.TotalPages ?? 1); i++)
-      {
-        <li class="page-item @(i == (int)(ViewBag.CurrentPage ?? 1) ? "active" : "")">
-          <a class="page-link"
-             href="?page=@i&search=@Context.Request.Query["search"]&status=@Context.Request.Query["status"]">
-            @i
-          </a>
-        </li>
-      }
-    </ul>
-  </nav>
-</div>
+  </ul>
+</nav>

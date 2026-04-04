@@ -1,0 +1,23 @@
+@model IEnumerable<task_flow.Models.TaskItem>
+
+<table class="table table-bordered table-hover">
+  <thead>
+  <tr>
+    <th>Title</th>
+    <th>Status</th>
+  </tr>
+  </thead>
+  <tbody>
+  @foreach (var t in Model)
+  {
+    <tr style="cursor:pointer"
+        data-bs-toggle="modal"
+        data-bs-target="#taskModal"
+        data-title="@t.Title"
+        data-status="@t.Status">
+      <td>@t.Title</td>
+      <td>@t.Status</td>
+    </tr>
+  }
+  </tbody>
+</table>

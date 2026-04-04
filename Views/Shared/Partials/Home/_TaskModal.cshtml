@@ -1,0 +1,28 @@
+<div class="modal fade" id="taskModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Task</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <p><strong>Title:</strong> <span id="modalTitle"></span></p>
+        <p><strong>Status:</strong> <span id="modalStatus"></span></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const modal = document.getElementById('taskModal');
+
+    modal.addEventListener('show.bs.modal', function (event) {
+      const row = event.relatedTarget;
+
+      document.getElementById('modalTitle').innerText = row.getAttribute('data-title');
+      document.getElementById('modalStatus').innerText = row.getAttribute('data-status');
+    });
+  });
+</script>
