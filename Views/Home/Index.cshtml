@@ -7,63 +7,78 @@
 
 @if (User.Identity?.IsAuthenticated != true)
 {
-  <div class="text-center mt-5">
-    <h1>Welcome to TaskFlow</h1>
-    <p>Please login or register to manage your tasks.</p>
+  <div class="card shadow-sm app-card mx-auto mt-5 home-hero-card">
+    <div class="card-body text-center p-4 p-md-5">
+      <h1 class="h2 mb-2">Welcome to TaskFlow</h1>
+      <p class="text-muted mb-4">Please login or register to manage your tasks.</p>
 
-    <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Login">Login</a>
-    <a class="btn btn-secondary" asp-area="Identity" asp-page="/Account/Register">Register</a>
+      <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Login">Login</a>
+      <a class="btn btn-outline-secondary" asp-area="Identity" asp-page="/Account/Register">Register</a>
+    </div>
   </div>
 
   return;
 }
 
-<h2 class="mb-4">Task Board</h2>
-
-<form method="get" class="row mb-4">
-  <div class="col">
-    <input name="search" class="form-control"
-           value="@Context.Request.Query["search"]"
-           placeholder="Search..."/>
+<section class="home-board">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+    <h2 class="mb-0">Task Board</h2>
+    <small class="text-muted">Click a row to view task details</small>
   </div>
 
-  <div class="col">
-    <select name="status" class="form-control">
-      <option value="">All</option>
-      <option value="Todo" selected="@(selectedStatus == "Todo" ? "selected" : null)">Todo</option>
-      <option value="InProgress" selected="@(selectedStatus == "InProgress" ? "selected" : null)">In Progress</option>
-      <option value="Done" selected="@(selectedStatus == "Done" ? "selected" : null)">Done</option>
-    </select>
-  </div>
+  <form method="get" class="card shadow-sm app-card mb-4">
+    <div class="card-body">
+      <div class="row g-2 g-md-3 align-items-end">
+        <div class="col-12 col-md-6">
+          <label for="taskSearch" class="form-label mb-1">Search</label>
+          <input id="taskSearch"
+                 name="search"
+                 class="form-control"
+                 value="@Context.Request.Query["search"]"
+                 placeholder="Search tasks by title..."/>
+        </div>
 
-  <div class="col">
-    <button type="submit" class="btn btn-primary">Filter</button>
-  </div>
-</form>
+        <div class="col-12 col-md-4">
+          <label for="taskStatus" class="form-label mb-1">Status</label>
+          <select id="taskStatus" name="status" class="form-select">
+            <option value="">All</option>
+            <option value="Todo" selected="@(selectedStatus == "Todo" ? "selected" : null)">Todo</option>
+            <option value="InProgress" selected="@(selectedStatus == "InProgress" ? "selected" : null)">In Progress</option>
+            <option value="Done" selected="@(selectedStatus == "Done" ? "selected" : null)">Done</option>
+          </select>
+        </div>
 
-@await Html.PartialAsync("~/Views/Shared/Partials/Home/_TaskTable.cshtml", Model)
+        <div class="col-12 col-md-2 d-grid">
+          <button type="submit" class="btn btn-primary">Filter</button>
+        </div>
+      </div>
+    </div>
+  </form>
 
-@await Html.PartialAsync("~/Views/Shared/Partials/Home/_TaskModal.cshtml")
-@await Html.PartialAsync("~/Views/Shared/Partials/_DeleteTaskConfirmModal.cshtml")
+  @await Html.PartialAsync("~/Views/Shared/Partials/Home/_TaskTable.cshtml", Model)
 
-<nav class="mt-4">
-  <ul class="pagination">
-    @for (int i = 1; i <= (int)(ViewBag.TotalPages ?? 1); i++)
-    {
-      var pageNumber = i;
-      <li class="page-item @(pageNumber == (int)(ViewBag.CurrentPage ?? 1) ? "active" : "")">
-        <a class="page-link"
-           asp-controller="Home"
-           asp-action="Index"
-           asp-route-page="@pageNumber"
-           asp-route-search="@Context.Request.Query["search"]"
-           asp-route-status="@selectedStatus">
-          @pageNumber
-        </a>
-      </li>
-    }
-  </ul>
-</nav>
+  @await Html.PartialAsync("~/Views/Shared/Partials/Home/_TaskModal.cshtml")
+  @await Html.PartialAsync("~/Views/Shared/Partials/_DeleteTaskConfirmModal.cshtml")
+
+  <nav class="mt-4 d-flex justify-content-center" aria-label="Task pagination">
+    <ul class="pagination mb-0">
+      @for (int i = 1; i <= (int)(ViewBag.TotalPages ?? 1); i++)
+      {
+        var pageNumber = i;
+        <li class="page-item @(pageNumber == (int)(ViewBag.CurrentPage ?? 1) ? "active" : "")">
+          <a class="page-link"
+             asp-controller="Home"
+             asp-action="Index"
+             asp-route-page="@pageNumber"
+             asp-route-search="@Context.Request.Query["search"]"
+             asp-route-status="@selectedStatus">
+            @pageNumber
+          </a>
+        </li>
+      }
+    </ul>
+  </nav>
+</section>
 
 <script>
   const editTaskBaseUrl = '@Url.Action("Edit", "Task")';

@@ -1,35 +1,39 @@
 @model IEnumerable<task_flow.Models.TaskItem>
 
-<table class="table table-bordered table-hover">
-  <thead>
-  <tr>
-    <th>Title</th>
-    <th>Status</th>
-  </tr>
-  </thead>
-  <tbody>
-  @if (Model.Any())
-  {
-    @foreach (var t in Model)
-    {
-      <tr data-bs-toggle="modal"
-          data-bs-target="#taskModal"
-          data-task-id="@t.Id"
-          data-task-title="@t.Title"
-          data-task-description="@t.Description"
-          style="cursor:pointer"
-          onclick="openTask(this.dataset.taskTitle, this.dataset.taskDescription, this.dataset.taskId)">
-
-        <td>@t.Title</td>
-        <td>@t.Status</td>
+<div class="card shadow-sm app-card">
+  <div class="card-body p-0">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+      <tr>
+        <th>Title</th>
+        <th>Status</th>
       </tr>
-    }
-  }
-  else
-  {
-    <tr>
-      <td colspan="2" class="text-center text-muted">No tasks found.</td>
-    </tr>
-  }
-  </tbody>
-</table>
+      </thead>
+      <tbody>
+      @if (Model.Any())
+      {
+        @foreach (var t in Model)
+        {
+          <tr class="task-row"
+              data-bs-toggle="modal"
+              data-bs-target="#taskModal"
+              data-task-id="@t.Id"
+              data-task-title="@t.Title"
+              data-task-description="@t.Description"
+              onclick="openTask(this.dataset.taskTitle, this.dataset.taskDescription, this.dataset.taskId)">
+
+            <td>@t.Title</td>
+            <td>@t.Status</td>
+          </tr>
+        }
+      }
+      else
+      {
+        <tr>
+          <td colspan="2" class="text-center text-muted py-4">No tasks found.</td>
+        </tr>
+      }
+      </tbody>
+    </table>
+  </div>
+</div>

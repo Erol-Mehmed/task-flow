@@ -2,6 +2,7 @@
 
 @{
   ViewData["Title"] = "Tasks";
+  const int descriptionPreviewLength = 120;
 }
 
 <h2>Tasks</h2>
@@ -10,7 +11,7 @@
   <a asp-action="Create" class="btn btn-primary">Create New Task</a>
 </p>
 
-<table class="table">
+<table class="table align-middle">
   <thead>
   <tr>
     <th>Title</th>
@@ -24,7 +25,32 @@
   {
     <tr>
       <td>@item.Title</td>
-      <td>@item.Description</td>
+      <td class="task-description-cell">
+        @if (string.IsNullOrWhiteSpace(item.Description))
+        {
+          <span class="text-muted">-</span>
+        }
+        else
+        {
+          var shouldTruncate = item.Description.Length > descriptionPreviewLength;
+          var preview = shouldTruncate
+            ? item.Description[..descriptionPreviewLength] + "..."
+            : item.Description;
+
+          <div class="task-description-preview">@preview</div>
+
+          @if (shouldTruncate)
+          {
+            <button type="button"
+                    class="btn btn-link btn-sm p-0 task-read-more"
+                    data-task-title="@item.Title"
+                    data-task-description="@item.Description"
+                    onclick="openTaskDescription(this.dataset.taskTitle, this.dataset.taskDescription)">
+              Read more
+            </button>
+          }
+        }
+      </td>
       <td>@item.Status</td>
       <td>
         <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
@@ -43,3 +69,42 @@
 </table>
 
 @await Html.PartialAsync("~/Views/Shared/Partials/_DeleteTaskConfirmModal.cshtml")
+
+<div class="modal fade" id="taskDescriptionModal" tabindex="-1" aria-labelledby="taskDescriptionModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="taskDescriptionModalLabel">Task Description</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p id="taskDescriptionModalText" class="mb-0 task-description-full"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openTaskDescription(taskTitle, taskDescription) {
+    const modalElement = document.getElementById("taskDescriptionModal");
+    const modalTitleElement = document.getElementById("taskDescriptionModalLabel");
+    const modalTextElement = document.getElementById("taskDescriptionModalText");
+
+    if (!modalElement || !modalTitleElement || !modalTextElement) {
+      return;
+    }
+
+    const resolvedTitle = taskTitle || "Task Description";
+    const resolvedDescription = taskDescription || "No description provided.";
+
+    modalTitleElement.textContent = resolvedTitle;
+    modalTextElement.textContent = resolvedDescription;
+
+    const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+    modal.show();
+  }
+</script>
+

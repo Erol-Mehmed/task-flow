@@ -62,3 +62,46 @@ main {
   border-radius: 0.65rem;
   font-weight: 600;
 }
+
+.home-hero-card {
+  max-width: 640px;
+}
+
+.home-board h2 {
+  letter-spacing: 0.1px;
+}
+
+.task-row {
+  cursor: pointer;
+}
+
+.task-row td {
+  vertical-align: middle;
+}
+
+.pagination .page-link {
+  border-radius: 0.55rem;
+  margin: 0 0.1rem;
+}
+
+.task-description-cell {
+  max-width: 420px;
+}
+
+.task-description-preview,
+.task-description-full {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.task-description-preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.task-read-more {
+  text-decoration: none;
+}
+
