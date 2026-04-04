@@ -9,7 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\task-flow\task-flow.csproj" />
+        <ProjectReference Include="..\..\task-flow.csproj" />
     </ItemGroup>
 
     <ItemGroup>
