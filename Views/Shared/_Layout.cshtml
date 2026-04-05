@@ -10,8 +10,8 @@
 </head>
 
 <body>
-<header>
-  <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+<header class="app-header mb-4">
+  <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark app-navbar border-bottom box-shadow">
     <div class="container-fluid">
       <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Task Flow</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
@@ -31,14 +31,14 @@
   </nav>
 </header>
 
-<div class="container">
-  <main role="main" class="pb-3">
+<div class="container app-main-container">
+  <main role="main" class="app-main pb-3">
     @RenderBody()
   </main>
 </div>
 
-<footer class="border-top footer text-muted">
-  <div class="container">
+<footer class="footer app-footer">
+  <div class="container footer-content">
     &copy; 2026 - Task Flow
   </div>
 </footer>

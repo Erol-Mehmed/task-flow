@@ -50,9 +50,24 @@ public static class DbSeeder
     if (!context.Task.Any() && adminUser != null)
     {
       context.Task.AddRange(
-        new TaskItem { Title = "First Task", UserId = adminUser.Id },
-        new TaskItem { Title = "Second Task", UserId = adminUser.Id },
-        new TaskItem { Title = "Third Task", UserId = adminUser.Id }
+        new TaskItem
+        {
+          Title = "[SEED] Setup project structure",
+          Description = "This is an example task created by the seeder to demonstrate functionality.",
+          Status = "Todo"
+        },
+        new TaskItem
+        {
+          Title = "[SEED] Implement authentication",
+          Description = "Example task for showing how authentication tasks appear in the system.",
+          Status = "InProgress"
+        },
+        new TaskItem
+        {
+          Title = "[SEED] UI layout for dashboard",
+          Description = "Example task used to demonstrate UI rendering in the task board.",
+          Status = "Done"
+        }
       );
 
       await context.SaveChangesAsync();

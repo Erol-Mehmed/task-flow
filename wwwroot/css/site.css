@@ -18,22 +18,87 @@ html {
 }
 
 body {
-  background: linear-gradient(180deg, #f8f9fa 0%, #eef2f7 100%);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
   color: #1f2937;
-  margin-bottom: 60px;
 }
 
-main {
-  min-height: calc(100vh - 180px);
+.app-main-container {
+  flex: 1 0 auto;
+  width: 100%;
 }
 
-.navbar {
-  backdrop-filter: blur(8px);
+.app-main {
+  padding-bottom: 1.5rem;
+}
+
+.app-header {
+  background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%);
+}
+
+.app-navbar {
+  background: transparent;
+  padding-top: 0.85rem;
+  padding-bottom: 0.85rem;
+}
+
+.app-navbar.border-bottom {
+  border-color: rgba(255, 255, 255, 0.18) !important;
 }
 
 .navbar-brand {
   font-weight: 700;
   letter-spacing: 0.2px;
+}
+
+.app-navbar .navbar-brand,
+.app-navbar .nav-link,
+.app-navbar .btn-link.nav-link {
+  color: #eff6ff !important;
+}
+
+.app-navbar .nav-link:hover,
+.app-navbar .nav-link:focus,
+.app-navbar .btn-link.nav-link:hover,
+.app-navbar .btn-link.nav-link:focus {
+  color: #bfdbfe !important;
+}
+
+.app-navbar .navbar-toggler {
+  border-color: rgba(239, 246, 255, 0.35);
+}
+
+.app-navbar .navbar-toggler:focus {
+  box-shadow: 0 0 0 0.2rem rgba(191, 219, 254, 0.3);
+}
+
+.app-footer {
+  margin-top: auto;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #cbd5e1;
+}
+
+.footer-content {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: 500;
+}
+
+.modal-content {
+  border: 0;
+  border-radius: 1rem;
+  box-shadow: 0 1.25rem 3rem rgba(15, 23, 42, 0.18);
+}
+
+.modal-header,
+.modal-footer {
+  border-color: #e2e8f0;
 }
 
 .app-card {

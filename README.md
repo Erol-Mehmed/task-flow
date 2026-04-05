@@ -190,16 +190,6 @@ task-flow/
   task-flow.csproj
 ```
 
-## Screenshots (Optional)
-
-Add screenshots under `docs/screenshots/` and reference them below:
-
-- Login/Register page
-- Home task board (search/filter/pagination)
-- Task details modal
-- Shared delete confirmation modal
-- Admin user management page
-
 ## Future Improvements
 
 - Extract business logic to dedicated services (`ITaskService`, `IAdminService`)

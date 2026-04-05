@@ -1,10 +1,9 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @inject SignInManager<ApplicationUser> SignInManager
-@inject UserManager<ApplicationUser> UserManager
 
-<ul class="navbar-nav">
-  @if (SignInManager.IsSignedIn(User))
-  {
+@if (SignInManager.IsSignedIn(User))
+{
+  <ul class="navbar-nav align-items-sm-center">
     <li class="nav-item">
       <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index"
          title="Manage">Hello @User.Identity?.Name!</a>
@@ -22,38 +21,46 @@
     </li>
 
     <li class="nav-item">
-      <button class="nav-link btn btn-link text-dark" data-bs-toggle="modal" data-bs-target="#logoutModal">
+      <button type="button" class="nav-link btn btn-link text-dark" data-bs-toggle="modal"
+              data-bs-target="#logoutModal">
         Logout
       </button>
     </li>
 
-    <form id="logoutForm" asp-area="Identity" asp-page="/Account/Logout"
-          asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })"
-          method="post">
-      @Html.AntiForgeryToken()
-    </form>
+  </ul>
 
-    <div class="modal fade" id="logoutModal">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-body">Are you sure you want to logout?</div>
-          <div class="modal-footer">
-            <button onclick="document.getElementById('logoutForm').submit()" class="btn btn-danger">
-              Logout
-            </button>
-            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          </div>
+  <form id="logoutForm" asp-area="Identity" asp-page="/Account/Logout"
+        asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })"
+        method="post">
+    @Html.AntiForgeryToken()
+  </form>
+
+  <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="logoutModalLabel">Confirm logout</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">Are you sure you want to logout?</div>
+        <div class="modal-footer">
+          <button type="button" onclick="document.getElementById('logoutForm').submit()" class="btn btn-danger">
+            Logout
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         </div>
       </div>
     </div>
-  }
-  else
-  {
+  </div>
+}
+else
+{
+  <ul class="navbar-nav align-items-sm-center">
     <li class="nav-item">
       <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a>
     </li>
     <li class="nav-item">
       <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
     </li>
-  }
-</ul>
+  </ul>
+}
