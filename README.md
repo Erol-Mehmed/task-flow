@@ -1,159 +1,104 @@
 # TaskFlow
 
-TaskFlow is an ASP.NET Core MVC task management application with authentication, role-based authorization, admin user management, task CRUD operations, filtering, pagination, and modal-based task actions.
+TaskFlow is an ASP.NET Core MVC course project for personal task management with authentication, role-based authorization, and an admin area.
 
-## Project Concept
+## What It Includes
 
-The project is built as a practical course project for managing personal tasks in a secure multi-user environment:
+- ASP.NET Core Identity authentication (`ApplicationUser`)
+- Roles: `Admin` and `User`
+- Task CRUD with ownership checks (users manage only their own tasks)
+- Admin-only user management (`Areas/Admin`)
+- Search, status filter, and pagination on the dashboard
+- PostgreSQL + EF Core migrations + startup seeding
 
-- Regular users can manage only their own tasks.
-- Admin users can view all tasks and manage platform users/roles.
-- The app uses server-rendered Razor views for fast development and clear MVC separation.
+## Tech Stack
 
-## Features
+- .NET 8 (`ASP.NET Core MVC`)
+- Entity Framework Core (`Npgsql` provider)
+- ASP.NET Core Identity
+- PostgreSQL (Docker-friendly setup)
+- xUnit + Moq + EF Core InMemory for tests
 
-### Authentication and Authorization
+## Quick Start
 
-- ASP.NET Core Identity integration (`ApplicationUser`)
-- Role support: `Admin`, `User`
-- Protected task/admin routes with `[Authorize]`
-- Role-protected admin area with `[Authorize(Roles = "Admin")]`
+1. Copy `.env.example` to `.env` and adjust values if needed.
+2. Start PostgreSQL with Docker.
+3. Apply EF migrations.
+4. Run the app.
 
-### Task Management
-
-- Create, edit, delete task
-- Task fields: title, description, status
-- Authorization checks so users cannot edit/delete other users' tasks
-- Admin can access all tasks
-
-### Home Dashboard
-
-- Task board view for logged-in user
-- Search by title
-- Filter by status (`Todo`, `InProgress`, `Done`)
-- Pagination (6 items per page)
-- Task details modal with read-more/less behavior
-- Shared delete confirmation modal reused across pages
-
-### Admin Area
-
-- List users
-- Change user role
-- Delete users
-
-## Design Decisions
-
-- **MVC + Razor Pages/Views**: chosen for simple, maintainable server-side rendering.
-- **Identity + Roles**: built-in secure auth/authorization with minimum custom code.
-- **EF Core + PostgreSQL**: reliable relational model and migrations support.
-- **Environment variables for secrets**: DB/admin credentials are not hardcoded.
-- **Shared partials**: common modal UI extracted to avoid duplicated markup/logic.
-
-## Architecture and Layers
-
-The current architecture is a clean MVC app with clear responsibilities:
-
-- **Presentation Layer**
-  - Controllers: `Controllers/*`, `Areas/Admin/Controllers/*`
-  - Views: `Views/*`, `Areas/Admin/Views/*`
-- **Domain Layer**
-  - Entities/Models: `Models/ApplicationUser.cs`, `Models/TaskItem.cs`
-- **Data Access Layer**
-  - EF Core context: `Data/ApplicationDbContext.cs`
-  - Migrations: `Data/Migrations/*`
-  - Seeding: `Data/DbSeeder.cs`
-
-### Service Layer Note
-
-There is currently **no separate custom service layer** (`Services/*`).
-Business logic is in controllers + EF queries. This is acceptable for the current scope and is covered by unit tests.
-A future refactor can extract task/user workflows into dedicated services.
-
-## Data Model and Validations
-
-### `TaskItem`
-
-- `Title` (required, max 50)
-- `Description` (optional, max 500)
-- `Status` (max 20, default `Todo`)
-- `UserId` (owner id)
-
-### `ApplicationUser`
-
-- Extends Identity user
-- `FirstName` (required, max 100)
-- `LastName` (required, max 100)
-
-## Seeding Strategy
-
-On startup, `DbSeeder.SeedRolesAndAdmin(...)`:
-
-1. Creates roles: `Admin`, `User`.
-2. Creates admin user from environment variables if missing.
-3. Adds admin role to that user.
-4. Seeds initial tasks when the task table is empty.
-
-Required admin env vars:
-
-- `ADMIN_EMAIL`
-- `ADMIN_PASSWORD`
-- `ADMIN_FIRST_NAME`
-- `ADMIN_LAST_NAME`
-
-## Setup Instructions
-
-## 1) Prerequisites
-
-- .NET SDK 8.x
-- Docker Desktop (recommended for PostgreSQL)
-
-## 2) Configure environment variables
-
-Create a `.env` file in the project root (`task-flow/`):
-
-```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=taskflow_db
-DB_USER=postgres
-DB_PASSWORD=postgres
-
-ADMIN_EMAIL=admin@taskflow.local
-ADMIN_PASSWORD=Admin123!
-ADMIN_FIRST_NAME=System
-ADMIN_LAST_NAME=Admin
+```zsh
+cd /Users/erolmehmed/Projects/GitHub/task-flow
+cp .env.example .env
+docker compose up -d
+dotnet ef database update
+dotnet run
 ```
 
-## 3) Start PostgreSQL
+Default development URLs are defined in `Properties/launchSettings.json`:
+- `http://localhost:5087`
+- `https://localhost:7095`
+
+## Prerequisites
+
+- .NET SDK 8.x
+- Docker Desktop (or a local PostgreSQL instance)
+- EF Core CLI tools (`dotnet-ef`)
+
+If `dotnet ef` is missing:
+
+```zsh
+dotnet tool install --global dotnet-ef
+```
+
+## Environment Configuration
+
+The application reads database and admin seed values from environment variables (`DotNetEnv.Env.Load()` in `Program.cs`).
+
+Use `.env.example` as the canonical template:
+
+```zsh
+cd /Users/erolmehmed/Projects/GitHub/task-flow
+cp .env.example .env
+```
+
+Then edit `.env` with your own values (database connection and `ADMIN_*` seed credentials).
+
+## Database and Seeding
+
+On startup, `Data/DbSeeder.cs`:
+
+1. Ensures roles `Admin` and `User` exist.
+2. Creates admin user from `ADMIN_*` variables (if missing).
+3. Assigns the `Admin` role.
+4. Seeds example tasks when the task table is empty.
+
+If required `ADMIN_*` variables are missing, startup seeding throws an error.
+
+Start database and apply schema:
 
 ```zsh
 cd /Users/erolmehmed/Projects/GitHub/task-flow
 docker compose up -d
-```
-
-## 4) Apply migrations
-
-```zsh
-cd /Users/erolmehmed/Projects/GitHub/task-flow
 dotnet ef database update
 ```
 
-## 5) Run the app
+## Run the App
 
 ```zsh
 cd /Users/erolmehmed/Projects/GitHub/task-flow
 dotnet run
 ```
 
+Sign in with the admin credentials from your `.env` file.
+
 ## Testing
 
-Unit tests are in `tests/task-flow.Tests` and currently validate controllers and helper behavior.
+Tests are under `tests/task-flow.Tests`.
 
-Covered areas:
-
-- `HomeController` (filtering, pagination, user scoping)
-- `TaskController` (CRUD + authorization + redirect logic)
-- `AdminController` (user listing, role update, deletion)
+Current coverage focus:
+- `HomeController`
+- `TaskController`
+- `Areas/Admin/Controllers/AdminController`
 
 Run tests:
 
@@ -162,21 +107,16 @@ cd /Users/erolmehmed/Projects/GitHub/task-flow
 dotnet test tests/task-flow.Tests/task-flow.Tests.csproj
 ```
 
-Generate coverage report artifacts (for instructor submission):
+Generate coverage artifact:
 
 ```zsh
 cd /Users/erolmehmed/Projects/GitHub/task-flow
 dotnet test tests/task-flow.Tests/task-flow.Tests.csproj --collect:"XPlat Code Coverage"
 ```
 
-> This command generates `coverage.cobertura.xml` under `TestResults/*`.
+Coverage files are generated under `tests/task-flow.Tests/TestResults/*`.
 
-## Test Coverage Requirement (Course)
-
-The project includes controller/business-flow unit tests and coverage tooling setup (`coverlet.collector`) to measure coverage.
-Use the coverage command above and include the produced report in your submission package if your instructor requires a numeric threshold check (e.g., 65%+).
-
-## Project Structure (Simplified)
+## Project Structure
 
 ```text
 task-flow/
@@ -190,10 +130,14 @@ task-flow/
   task-flow.csproj
 ```
 
-## Future Improvements
+## Known Limitations
 
-- Extract business logic to dedicated services (`ITaskService`, `IAdminService`)
-- Add DTOs and mapping for cleaner controller boundaries
-- Add integration tests (`WebApplicationFactory`)
-- Improve client-side accessibility and keyboard interactions
+- No separate service layer yet (`controllers` contain business flow).
+- No integration tests yet (`WebApplicationFactory` can be added next).
+
+## Suggested Next Improvements
+
+- Extract task/admin workflows into dedicated services.
+- Add DTO mapping and validation-focused service methods.
+- Add integration tests for auth + routing + seeding scenarios.
 
