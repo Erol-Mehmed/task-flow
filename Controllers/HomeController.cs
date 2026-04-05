@@ -45,7 +45,10 @@ public class HomeController : Controller
     var query = _context.Task.Where(t => t.UserId == user.Id);
 
     if (!string.IsNullOrWhiteSpace(search))
-      query = query.Where(t => t.Title.Contains(search));
+    {
+      var normalizedSearch = search.Trim().ToLower();
+      query = query.Where(t => t.Title.ToLower().Contains(normalizedSearch));
+    }
 
     if (!string.IsNullOrWhiteSpace(status))
       query = query.Where(t => t.Status == status);

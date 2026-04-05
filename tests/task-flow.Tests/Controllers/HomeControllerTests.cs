@@ -85,6 +85,25 @@ public class HomeControllerTests
     }
 
     [Fact]
+    public async Task Index_WithSearchFilter_IgnoresLetterCase()
+    {
+        var user = new ApplicationUser { Id = "u1", FirstName = "Alice", LastName = "A" };
+        var (controller, db) = BuildController(
+            nameof(Index_WithSearchFilter_IgnoresLetterCase), user);
+
+        db.Task.AddRange(
+            new TaskItem { Id = 1, Title = "First Task", UserId = "u1" },
+            new TaskItem { Id = 2, Title = "second task", UserId = "u1" });
+        await db.SaveChangesAsync();
+
+        var result = await controller.Index("first", null) as ViewResult;
+        var model = result?.Model as List<TaskItem>;
+
+        Assert.Single(model!);
+        Assert.Equal("First Task", model![0].Title);
+    }
+
+    [Fact]
     public async Task Index_WithStatusFilter_ReturnsMatchingTasks()
     {
         var user = new ApplicationUser { Id = "u1", FirstName = "Alice", LastName = "A" };

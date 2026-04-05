@@ -54,19 +54,22 @@ public static class DbSeeder
         {
           Title = "[SEED] Setup project structure",
           Description = "This is an example task created by the seeder to demonstrate functionality.",
-          Status = "Todo"
+          Status = "Todo",
+          UserId = adminUser.Id
         },
         new TaskItem
         {
           Title = "[SEED] Implement authentication",
           Description = "Example task for showing how authentication tasks appear in the system.",
-          Status = "InProgress"
+          Status = "InProgress",
+          UserId = adminUser.Id
         },
         new TaskItem
         {
           Title = "[SEED] UI layout for dashboard",
           Description = "Example task used to demonstrate UI rendering in the task board.",
-          Status = "Done"
+          Status = "Done",
+          UserId = adminUser.Id
         }
       );
 
