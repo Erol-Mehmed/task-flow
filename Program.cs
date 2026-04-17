@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using task_flow.Data;
 using task_flow.Models;
+using task_flow.Repositories.Task;
+using task_flow.Services.Task;
 
 DotNetEnv.Env.Load();
 
@@ -29,6 +31,9 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => { options.SignIn
 builder.Services.AddControllersWithViews(options =>
   options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()));
 builder.Services.AddRazorPages();
+
+builder.Services.AddScoped<ITaskRepository, TaskRepository>();
+builder.Services.AddScoped<ITaskService, TaskService>();
 
 var app = builder.Build();
 

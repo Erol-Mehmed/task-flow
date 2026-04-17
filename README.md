@@ -23,12 +23,14 @@ TaskFlow is an ASP.NET Core MVC course project for personal task management with
 
 1. Copy `.env.example` to `.env` and adjust values if needed.
 2. Start PostgreSQL with Docker.
-3. Apply EF migrations.
-4. Run the app.
+3. The below commands will create the database, apply migrations, seed initial data, and run the app.
+
+> **Environment info:**  
+> Before running these commands, make sure `.env` exists (copied from `.env.example`) and contains your database settings plus `ADMIN_*` values.  
+> The app loads these values at startup for DB connection and admin seeding.
 
 ```zsh
-cd /Users/erolmehmed/Projects/GitHub/task-flow
-cp .env.example .env
+cp -i .env.example .env
 docker compose up -d
 dotnet ef database update
 dotnet run
