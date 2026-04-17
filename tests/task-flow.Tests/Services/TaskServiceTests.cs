@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using task_flow.Data;
 using task_flow.Models;
-using task_flow.Repositories.Task;
-using task_flow.Services.Task;
+using task_flow.Repositories.TaskRepository;
+using task_flow.Services.TaskService;
 
 namespace task_flow.Tests.Services;
 

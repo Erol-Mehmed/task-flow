@@ -4,7 +4,7 @@ using Moq;
 using System.Security.Claims;
 using task_flow.Controllers;
 using task_flow.Models;
-using task_flow.Services.Task;
+using task_flow.Services.TaskService;
 using task_flow.Tests.Helpers;
 
 namespace task_flow.Tests.Controllers;

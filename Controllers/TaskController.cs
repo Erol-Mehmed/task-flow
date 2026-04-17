@@ -1,39 +1,45 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using task_flow.Data;
 using task_flow.Models;
+using task_flow.Services.TaskService;
 
 namespace task_flow.Controllers;
 
 [Authorize]
 public class TaskController : Controller
 {
-  private readonly ApplicationDbContext _context;
+  private readonly ITaskService _taskService;
   private readonly UserManager<ApplicationUser> _userManager;
 
-  public TaskController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+  public TaskController(
+    ITaskService taskService,
+    UserManager<ApplicationUser> userManager)
   {
-    _context = context;
+    _taskService = taskService;
     _userManager = userManager;
   }
 
-  public async Task<IActionResult> Index()
+  private async Task<(ApplicationUser? User, bool IsAdmin)> GetUserContextAsync()
   {
     var user = await _userManager.GetUserAsync(User);
 
     if (user == null)
+      return (null, false);
+
+    return (user, User.IsInRole("Admin"));
+  }
+
+  public async Task<IActionResult> Index()
+  {
+    var (user, isAdmin) = await GetUserContextAsync();
+
+    if (user == null)
       return Unauthorized();
 
-    if (User.IsInRole("Admin"))
-    {
-      return View(await _context.Task.ToListAsync());
-    }
+    var tasks = await _taskService.GetIndexTasksAsync(user.Id, isAdmin);
 
-    return View(await _context.Task
-      .Where(t => t.UserId == user.Id)
-      .ToListAsync());
+    return View(tasks);
   }
 
   public IActionResult Create()
@@ -48,31 +54,29 @@ public class TaskController : Controller
     if (!ModelState.IsValid)
       return View(task);
 
-    var user = await _userManager.GetUserAsync(User);
+    var (user, _) = await GetUserContextAsync();
 
     if (user == null)
       return Unauthorized();
 
-    task.UserId = user.Id;
-
-    _context.Task.Add(task);
-    await _context.SaveChangesAsync();
+    await _taskService.CreateTaskAsync(task, user.Id);
 
     return RedirectToAction(nameof(Index));
   }
 
   public async Task<IActionResult> Edit(int id)
   {
-    var task = await _context.Task.FindAsync(id);
+    var task = await _taskService.GetTaskByIdAsync(id);
+
     if (task == null)
       return NotFound();
 
-    var user = await _userManager.GetUserAsync(User);
+    var (user, isAdmin) = await GetUserContextAsync();
 
     if (user == null)
       return Unauthorized();
 
-    if (task.UserId != user.Id && !User.IsInRole("Admin"))
+    if (!_taskService.CanUserAccessTask(task, user.Id, isAdmin))
       return Unauthorized();
 
     return View(task);
@@ -85,23 +89,24 @@ public class TaskController : Controller
     if (!ModelState.IsValid)
       return View(task);
 
-    var existingTask = await _context.Task.FindAsync(task.Id);
+    var existingTask = await _taskService.GetTaskByIdAsync(task.Id);
+
     if (existingTask == null)
       return NotFound();
 
-    var user = await _userManager.GetUserAsync(User);
+    var (user, isAdmin) = await GetUserContextAsync();
 
     if (user == null)
       return Unauthorized();
 
-    if (existingTask.UserId != user.Id && !User.IsInRole("Admin"))
+    if (!_taskService.CanUserAccessTask(existingTask, user.Id, isAdmin))
       return Unauthorized();
 
     existingTask.Title = task.Title;
     existingTask.Description = task.Description;
     existingTask.Status = task.Status;
 
-    await _context.SaveChangesAsync();
+    await _taskService.UpdateTaskAsync(existingTask, user.Id, isAdmin);
 
     return RedirectToAction(nameof(Index));
   }
@@ -110,20 +115,23 @@ public class TaskController : Controller
   [ValidateAntiForgeryToken]
   public async Task<IActionResult> Delete(int id, string? returnUrl)
   {
-    var task = await _context.Task.FindAsync(id);
-    if (task == null)
-      return NotFound();
-
-    var user = await _userManager.GetUserAsync(User);
+    var (user, isAdmin) = await GetUserContextAsync();
 
     if (user == null)
       return Unauthorized();
 
-    if (task.UserId != user.Id && !User.IsInRole("Admin"))
+    try
+    {
+      await _taskService.DeleteTaskAsync(id, user.Id, isAdmin);
+    }
+    catch (KeyNotFoundException)
+    {
+      return NotFound();
+    }
+    catch (UnauthorizedAccessException)
+    {
       return Unauthorized();
-
-    _context.Task.Remove(task);
-    await _context.SaveChangesAsync();
+    }
 
     if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
       return LocalRedirect(returnUrl);

@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using task_flow.Areas.Admin.Models;
-using task_flow.Models;
+using task_flow.Areas.Admin.Services;
 
 namespace task_flow.Areas.Admin.Controllers;
 
@@ -11,43 +10,29 @@ namespace task_flow.Areas.Admin.Controllers;
 [Authorize(Roles = "Admin")]
 public class AdminController : Controller
 {
-  private readonly UserManager<ApplicationUser> _userManager;
+  private readonly IAdminService _adminService;
   private static readonly string[] AvailableRoles = ["Admin", "User"];
 
-  public AdminController(UserManager<ApplicationUser> userManager)
+  public AdminController(IAdminService adminService)
   {
-    _userManager = userManager;
+    _adminService = adminService;
   }
 
-  public IActionResult Index()
-  {
-    return View();
-  }
+  public IActionResult Index() => View();
 
   public IActionResult Users()
   {
-    var users = _userManager.Users.ToList();
+    var users = _adminService.GetAllUsers();
     ViewBag.CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
     return View(users);
   }
 
   public async Task<IActionResult> Edit(string id)
   {
-    if (string.IsNullOrWhiteSpace(id))
-      return NotFound();
+    if (string.IsNullOrWhiteSpace(id)) return NotFound();
 
-    var user = await _userManager.FindByIdAsync(id);
-    if (user == null)
-      return NotFound();
-
-    var roles = await _userManager.GetRolesAsync(user);
-    var model = new AdminUserEditViewModel
-    {
-      UserId = user.Id,
-      Email = user.Email ?? string.Empty,
-      Role = roles.FirstOrDefault() ?? "User",
-      AvailableRoles = AvailableRoles
-    };
+    var model = await _adminService.GetUserForEditAsync(id);
+    if (model == null) return NotFound();
 
     return View(model);
   }
@@ -62,21 +47,13 @@ public class AdminController : Controller
       return View(model);
     }
 
-    if (!AvailableRoles.Contains(model.Role))
+    var success = await _adminService.UpdateUserRoleAsync(model.UserId, model.Role);
+    if (!success)
     {
-      ModelState.AddModelError(nameof(model.Role), "Invalid role selected.");
+      ModelState.AddModelError(nameof(model.Role), "Invalid role or user not found.");
       model.AvailableRoles = AvailableRoles;
       return View(model);
     }
-
-    var user = await _userManager.FindByIdAsync(model.UserId);
-    if (user == null)
-      return NotFound();
-
-    var currentRoles = await _userManager.GetRolesAsync(user);
-
-    await _userManager.RemoveFromRolesAsync(user, currentRoles);
-    await _userManager.AddToRoleAsync(user, model.Role);
 
     return RedirectToAction(nameof(Users));
   }
@@ -85,21 +62,15 @@ public class AdminController : Controller
   [ValidateAntiForgeryToken]
   public async Task<IActionResult> Delete(string id)
   {
-    if (string.IsNullOrWhiteSpace(id))
-      return NotFound();
+    if (string.IsNullOrWhiteSpace(id)) return NotFound();
 
     var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    if (id == currentUserId)
+    var success = await _adminService.DeleteUserAsync(id, currentUserId!);
+
+    if (!success)
     {
       TempData["ErrorMessage"] = "You cannot delete your own account.";
-      return RedirectToAction(nameof(Users));
     }
-
-    var user = await _userManager.FindByIdAsync(id);
-    if (user == null)
-      return NotFound();
-
-    await _userManager.DeleteAsync(user);
 
     return RedirectToAction(nameof(Users));
   }

@@ -1,125 +1,114 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Moq;
 using task_flow.Areas.Admin.Controllers;
 using task_flow.Areas.Admin.Models;
 using task_flow.Models;
+using task_flow.Areas.Admin.Services;
 using task_flow.Tests.Helpers;
 
 namespace task_flow.Tests.Controllers;
 
 public class AdminControllerTests
 {
-    // ── Users ────────────────────────────────────────────────────────────────
+  // ── Users ────────────────────────────────────────────────────────────────
 
-    [Fact]
-    public void Users_ReturnsViewWithAllUsers()
+  [Fact]
+  public void Users_ReturnsViewWithAllUsers()
+  {
+    var users = new List<ApplicationUser>
     {
-        var users = new List<ApplicationUser>
-        {
-            new() { Id = "u1", FirstName = "Alice", LastName = "A", UserName = "alice" },
-            new() { Id = "u2", FirstName = "Bob", LastName = "B", UserName = "bob" }
-        };
+      new() { Id = "u1", FirstName = "Alice", LastName = "A", UserName = "alice" },
+      new() { Id = "u2", FirstName = "Bob", LastName = "B", UserName = "bob" }
+    };
 
-        var mockUserMgr = MockHelper.MockUserManager();
-        mockUserMgr.Setup(x => x.Users).Returns(users.AsQueryable());
+    var mockService = new Mock<IAdminService>();
+    mockService.Setup(x => x.GetAllUsers()).Returns(users);
 
-        var controller = new AdminController(mockUserMgr.Object);
-        controller.ControllerContext = MockHelper.CreateControllerContext("admin", isAdmin: true);
+    var controller = new AdminController(mockService.Object);
+    controller.ControllerContext = MockHelper.CreateControllerContext("admin", isAdmin: true);
 
-        var result = controller.Users() as ViewResult;
-        var model = result?.Model as List<ApplicationUser>;
+    var result = controller.Users() as ViewResult;
+    var model = result?.Model as List<ApplicationUser>;
 
-        Assert.Equal(2, model?.Count);
-    }
+    Assert.Equal(2, model?.Count);
+  }
 
-    // ── Edit ─────────────────────────────────────────────────────────────────
+  // ── Edit ─────────────────────────────────────────────────────────────────
 
-    [Fact]
-    public async Task Edit_GET_ReturnsViewWithUserAndCurrentRole()
+  [Fact]
+  public async Task Edit_GET_ReturnsViewWithUserAndCurrentRole()
+  {
+    var editModel = new AdminUserEditViewModel
     {
-        var user = new ApplicationUser { Id = "u1", FirstName = "Alice", LastName = "A" };
+      UserId = "u1",
+      Email = "alice@test.com",
+      Role = "User",
+      AvailableRoles = ["Admin", "User"]
+    };
 
-        var mockUserMgr = MockHelper.MockUserManager();
-        mockUserMgr.Setup(x => x.FindByIdAsync("u1")).ReturnsAsync(user);
-        mockUserMgr.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(new List<string> { "User" });
+    var mockService = new Mock<IAdminService>();
+    mockService.Setup(x => x.GetUserForEditAsync("u1")).ReturnsAsync(editModel);
 
-        var controller = new AdminController(mockUserMgr.Object);
-        controller.ControllerContext = MockHelper.CreateControllerContext("admin", isAdmin: true);
+    var controller = new AdminController(mockService.Object);
+    controller.ControllerContext = MockHelper.CreateControllerContext("admin", isAdmin: true);
 
-        var result = await controller.Edit("u1") as ViewResult;
-        var model = result?.Model as AdminUserEditViewModel;
+    var result = await controller.Edit("u1") as ViewResult;
+    var model = result?.Model as AdminUserEditViewModel;
 
-        Assert.NotNull(model);
-        Assert.Equal("u1", model?.UserId);
-        Assert.Equal("User", model?.Role);
-    }
+    Assert.NotNull(model);
+    Assert.Equal("u1", model.UserId);
+    Assert.Equal("User", model.Role);
+  }
 
-    [Fact]
-    public async Task Edit_POST_UpdatesRoleAndRedirectsToUsers()
-    {
-        var user = new ApplicationUser { Id = "u1", FirstName = "Alice", LastName = "A" };
+  [Fact]
+  public async Task Edit_POST_UpdatesRoleAndRedirectsToUsers()
+  {
+    var mockService = new Mock<IAdminService>();
+    mockService.Setup(x => x.UpdateUserRoleAsync("u1", "Admin")).ReturnsAsync(true);
 
-        var mockUserMgr = MockHelper.MockUserManager();
-        mockUserMgr.Setup(x => x.FindByIdAsync("u1")).ReturnsAsync(user);
-        mockUserMgr.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(new List<string> { "User" });
-        mockUserMgr
-            .Setup(x => x.RemoveFromRolesAsync(user, It.IsAny<IEnumerable<string>>()))
-            .ReturnsAsync(IdentityResult.Success);
-        mockUserMgr
-            .Setup(x => x.AddToRoleAsync(user, "Admin"))
-            .ReturnsAsync(IdentityResult.Success);
+    var controller = new AdminController(mockService.Object);
+    controller.ControllerContext = MockHelper.CreateControllerContext("admin", isAdmin: true);
 
-        var controller = new AdminController(mockUserMgr.Object);
-        controller.ControllerContext = MockHelper.CreateControllerContext("admin", isAdmin: true);
+    var model = new AdminUserEditViewModel { UserId = "u1", Role = "Admin" };
 
-        var model = new AdminUserEditViewModel
-        {
-            UserId = "u1",
-            Role = "Admin"
-        };
+    var result = await controller.Edit(model) as RedirectToActionResult;
 
-        var result = await controller.Edit(model) as RedirectToActionResult;
+    Assert.Equal("Users", result?.ActionName);
+    mockService.Verify(x => x.UpdateUserRoleAsync("u1", "Admin"), Times.Once);
+  }
 
-        Assert.Equal("Users", result?.ActionName);
-        mockUserMgr.Verify(x => x.RemoveFromRolesAsync(user, It.IsAny<IEnumerable<string>>()), Times.Once);
-        mockUserMgr.Verify(x => x.AddToRoleAsync(user, "Admin"), Times.Once);
-    }
+  // ── Delete ───────────────────────────────────────────────────────────────
 
-    // ── Delete ───────────────────────────────────────────────────────────────
+  [Fact]
+  public async Task Delete_RemovesUserAndRedirectsToUsers()
+  {
+    var mockService = new Mock<IAdminService>();
+    mockService.Setup(x => x.DeleteUserAsync("u1", "admin-id")).ReturnsAsync(true);
 
-    [Fact]
-    public async Task Delete_RemovesUserAndRedirectsToUsers()
-    {
-        var user = new ApplicationUser { Id = "u1", FirstName = "Alice", LastName = "A" };
+    var controller = new AdminController(mockService.Object);
+    controller.ControllerContext = MockHelper.CreateControllerContext("admin-id", isAdmin: true);
 
-        var mockUserMgr = MockHelper.MockUserManager();
-        mockUserMgr.Setup(x => x.FindByIdAsync("u1")).ReturnsAsync(user);
-        mockUserMgr.Setup(x => x.DeleteAsync(user)).ReturnsAsync(IdentityResult.Success);
+    var result = await controller.Delete("u1") as RedirectToActionResult;
 
-        var controller = new AdminController(mockUserMgr.Object);
-        controller.ControllerContext = MockHelper.CreateControllerContext("admin-id", isAdmin: true);
+    Assert.Equal("Users", result?.ActionName);
+    mockService.Verify(x => x.DeleteUserAsync("u1", "admin-id"), Times.Once);
+  }
 
-        var result = await controller.Delete("u1") as RedirectToActionResult;
+  [Fact]
+  public async Task Delete_WhenTargetIsCurrentUser_DoesNotDeleteAndRedirectsWithError()
+  {
+    var mockService = new Mock<IAdminService>();
+    mockService.Setup(x => x.DeleteUserAsync("admin-id", "admin-id")).ReturnsAsync(false);
 
-        Assert.Equal("Users", result?.ActionName);
-        mockUserMgr.Verify(x => x.DeleteAsync(user), Times.Once);
-    }
+    var controller = new AdminController(mockService.Object);
+    controller.ControllerContext = MockHelper.CreateControllerContext("admin-id", isAdmin: true);
+    controller.TempData = new TempDataDictionary(controller.HttpContext, Mock.Of<ITempDataProvider>());
 
-    [Fact]
-    public async Task Delete_WhenTargetIsCurrentUser_DoesNotDeleteAndRedirectsWithError()
-    {
-        var mockUserMgr = MockHelper.MockUserManager();
-        var controller = new AdminController(mockUserMgr.Object);
-        controller.ControllerContext = MockHelper.CreateControllerContext("admin-id", isAdmin: true);
-        controller.TempData = new TempDataDictionary(controller.HttpContext, Mock.Of<ITempDataProvider>());
+    var result = await controller.Delete("admin-id") as RedirectToActionResult;
 
-        var result = await controller.Delete("admin-id") as RedirectToActionResult;
-
-        Assert.Equal("Users", result?.ActionName);
-        Assert.Equal("You cannot delete your own account.", controller.TempData["ErrorMessage"]);
-        mockUserMgr.Verify(x => x.DeleteAsync(It.IsAny<ApplicationUser>()), Times.Never);
-    }
+    Assert.Equal("Users", result?.ActionName);
+    Assert.Equal("You cannot delete your own account.", controller.TempData["ErrorMessage"]);
+    mockService.Verify(x => x.DeleteUserAsync("admin-id", "admin-id"), Times.Once);
+  }
 }
-

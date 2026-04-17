@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using task_flow.Models;
-using task_flow.Services.Task;
+using task_flow.Services.TaskService;
 using System.Diagnostics;
 
 namespace task_flow.Controllers;

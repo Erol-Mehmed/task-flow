@@ -3,8 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using task_flow.Data;
 using task_flow.Models;
-using task_flow.Repositories.Task;
-using task_flow.Services.Task;
+using task_flow.Repositories.TaskRepository;
+using task_flow.Services.TaskService;
+using task_flow.Areas.Admin.Services;
 
 DotNetEnv.Env.Load();
 
@@ -32,6 +33,7 @@ builder.Services.AddControllersWithViews(options =>
   options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()));
 builder.Services.AddRazorPages();
 
+builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 
