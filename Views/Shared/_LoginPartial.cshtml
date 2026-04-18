@@ -30,7 +30,7 @@
   </ul>
 
   <form id="logoutForm" asp-area="Identity" asp-page="/Account/Logout"
-        asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })"
+        asp-route-returnUrl="@Url.Action("Index", "Board", new { area = "" })"
         method="post">
     @Html.AntiForgeryToken()
   </form>

@@ -49,7 +49,7 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-  app.UseExceptionHandler("/Home/Error");
+  app.UseExceptionHandler("/Board/Error");
   app.UseHsts();
 }
 
@@ -60,16 +60,16 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseStatusCodePagesWithReExecute("/Home/NotFound");
+app.UseStatusCodePagesWithReExecute("/Board/NotFound");
 
 app.MapControllerRoute(
   name: "areas",
-  pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
+  pattern: "{area:exists}/{controller=Board}/{action=Index}/{id?}"
 );
 
 app.MapControllerRoute(
   name: "default",
-  pattern: "{controller=Home}/{action=Index}/{id?}"
+  pattern: "{controller=Board}/{action=Index}/{id?}"
 );
 
 app.MapRazorPages();

@@ -9,9 +9,9 @@ using task_flow.Tests.Helpers;
 
 namespace task_flow.Tests.Controllers;
 
-public class HomeControllerTests
+public class BoardControllerTests
 {
-  private static (HomeController controller, Mock<ITaskService> mockService) BuildController(
+  private static (BoardController controller, Mock<ITaskService> mockService) BuildController(
     ApplicationUser? user,
     (List<TaskItem> Tasks, int TotalPages) serviceResult = default)
   {
@@ -31,8 +31,8 @@ public class HomeControllerTests
       .Setup(x => x.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
       .ReturnsAsync(user);
 
-    var logger = new Mock<ILogger<HomeController>>();
-    var controller = new HomeController(mockService.Object, mockUserMgr.Object, logger.Object);
+    var logger = new Mock<ILogger<BoardController>>();
+    var controller = new BoardController(mockService.Object, mockUserMgr.Object, logger.Object);
     controller.ControllerContext = MockHelper.CreateControllerContext(user?.Id);
     return (controller, mockService);
   }

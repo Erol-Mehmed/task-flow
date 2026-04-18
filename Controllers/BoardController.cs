@@ -6,16 +6,16 @@ using System.Diagnostics;
 
 namespace task_flow.Controllers;
 
-public class HomeController : Controller
+public class BoardController : Controller
 {
   private readonly ITaskService _taskService;
   private readonly UserManager<ApplicationUser> _userManager;
-  private readonly ILogger<HomeController> _logger;
+  private readonly ILogger<BoardController> _logger;
 
-  public HomeController(
+  public BoardController(
     ITaskService taskService,
     UserManager<ApplicationUser> userManager,
-    ILogger<HomeController> logger)
+    ILogger<BoardController> logger)
   {
     _taskService = taskService;
     _userManager = userManager;
@@ -28,7 +28,7 @@ public class HomeController : Controller
     return View(new ErrorViewModel { RequestId = requestId });
   }
 
-  [Route("Home/NotFound")]
+  [Route("Board/NotFound")]
   public IActionResult NotFoundPage()
   {
     Response.StatusCode = 404;

@@ -1,13 +1,13 @@
 ﻿@model IEnumerable<task_flow.Models.TaskItem>
 
 @{
-  ViewData["Title"] = "Home Page";
+  ViewData["Title"] = "Board";
   var selectedStatus = Context.Request.Query["status"].ToString();
 }
 
 @if (User.Identity?.IsAuthenticated != true)
 {
-  <div class="card shadow-sm app-card mx-auto mt-5 home-hero-card">
+  <div class="card shadow-sm app-card mx-auto mt-5 board-page-hero-card">
     <div class="card-body text-center p-4 p-md-5">
       <h1 class="h2 mb-2">Welcome to TaskFlow</h1>
       <p class="text-muted mb-4">Please login or register to manage your tasks.</p>
@@ -20,7 +20,7 @@
   return;
 }
 
-<section class="home-board">
+<section class="board-page">
   <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
     <h2 class="mb-0">Task Board</h2>
     <small class="text-muted">Click a row to view task details</small>
@@ -55,9 +55,9 @@
     </div>
   </form>
 
-  @await Html.PartialAsync("~/Views/Shared/Partials/Home/_TaskTable.cshtml", Model)
+  @await Html.PartialAsync("~/Views/Shared/Partials/Board/_TaskTable.cshtml", Model)
 
-  @await Html.PartialAsync("~/Views/Shared/Partials/Home/_TaskModal.cshtml")
+  @await Html.PartialAsync("~/Views/Shared/Partials/Board/_TaskModal.cshtml")
   @await Html.PartialAsync("~/Views/Shared/Partials/_DeleteTaskConfirmModal.cshtml")
 
   <nav class="mt-4 d-flex justify-content-center" aria-label="Task pagination">
@@ -67,7 +67,7 @@
         var pageNumber = i;
         <li class="page-item @(pageNumber == (int)(ViewBag.CurrentPage ?? 1) ? "active" : "")">
           <a class="page-link"
-             asp-controller="Home"
+             asp-controller="Board"
              asp-action="Index"
              asp-route-page="@pageNumber"
              asp-route-search="@Context.Request.Query["search"]"
