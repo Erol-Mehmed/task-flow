@@ -1,23 +1,29 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 using task_flow.Models;
 using task_flow.Services.TaskService;
-using System.Diagnostics;
+using task_flow.Services.WorkspaceService;
 
 namespace task_flow.Controllers;
 
+[Authorize]
 public class BoardController : Controller
 {
   private readonly ITaskService _taskService;
+  private readonly IWorkspaceService _workspaceService;
   private readonly UserManager<ApplicationUser> _userManager;
   private readonly ILogger<BoardController> _logger;
 
   public BoardController(
     ITaskService taskService,
+    IWorkspaceService workspaceService,
     UserManager<ApplicationUser> userManager,
     ILogger<BoardController> logger)
   {
     _taskService = taskService;
+    _workspaceService = workspaceService;
     _userManager = userManager;
     _logger = logger;
   }
@@ -35,14 +41,33 @@ public class BoardController : Controller
     return View("NotFound");
   }
 
-  public async Task<IActionResult> Index(string? search, string? status, int page = 1)
+  public async Task<IActionResult> Index(int? workspaceId, string? search, string? status, int page = 1)
   {
     var user = await _userManager.GetUserAsync(User);
 
     if (user == null)
-      return View(new List<TaskItem>());
+      return Unauthorized();
+
+    if (workspaceId.HasValue)
+    {
+      var workspace = await _workspaceService.GetWorkspaceByIdAsync(workspaceId.Value);
+
+      if (workspace == null)
+        return NotFound();
+
+      var isAdmin = User.IsInRole("Admin");
+
+      if (!_workspaceService.CanUserAccessWorkspace(workspace, user.Id, isAdmin))
+        return Unauthorized();
+
+      ViewBag.SelectedWorkspaceId = workspace.Id;
+      ViewBag.SelectedWorkspaceName = workspace.Name;
+    }
 
     var result = await _taskService.GetTasks(user.Id, search, status, page);
+
+    if (workspaceId.HasValue)
+      result.Tasks = result.Tasks.Where(t => t.WorkspaceId == workspaceId.Value).ToList();
 
     ViewBag.CurrentPage = page;
     ViewBag.TotalPages = result.TotalPages;

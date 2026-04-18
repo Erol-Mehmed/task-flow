@@ -22,17 +22,14 @@
   @foreach (var item in Model)
   {
     <tr>
-      <td>@item.Name</td>
       <td>
-        @if (item.User != null)
-        {
-          @item.User.Email
-        }
-        else
-        {
-          <span class="text-muted">-</span>
-        }
+        <a asp-controller="Board"
+           asp-action="Index"
+           asp-route-workspaceId="@item.Id">
+          @item.Name
+        </a>
       </td>
+      <td>@(item.User?.Email ?? "-")</td>
       <td>
         <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
 

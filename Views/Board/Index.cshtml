@@ -22,11 +22,32 @@
 
 <section class="board-page">
   <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-    <h2 class="mb-0">Task Board</h2>
-    <small class="text-muted">Click a row to view task details</small>
+    <div>
+      <h2 class="mb-0">
+        Task Board
+        @if (ViewBag.SelectedWorkspaceName != null)
+        {
+          <span class="text-muted fs-5">- @ViewBag.SelectedWorkspaceName</span>
+        }
+      </h2>
+
+      @if (ViewBag.SelectedWorkspaceName != null)
+      {
+        <small class="text-muted">Showing tasks for the selected workspace</small>
+      }
+      else
+      {
+        <small class="text-muted">Click a row to view task details</small>
+      }
+    </div>
   </div>
 
   <form method="get" class="card shadow-sm app-card mb-4">
+    @if (ViewBag.SelectedWorkspaceId != null)
+    {
+      <input type="hidden" name="workspaceId" value="@ViewBag.SelectedWorkspaceId"/>
+    }
+
     <div class="card-body">
       <div class="row g-2 g-md-3 align-items-end">
         <div class="col-12 col-md-6">
@@ -43,7 +64,8 @@
           <select id="taskStatus" name="status" class="form-select">
             <option value="">All</option>
             <option value="Todo" selected="@(selectedStatus == "Todo" ? "selected" : null)">Todo</option>
-            <option value="InProgress" selected="@(selectedStatus == "InProgress" ? "selected" : null)">In Progress</option>
+            <option value="InProgress" selected="@(selectedStatus == "InProgress" ? "selected" : null)">In Progress
+            </option>
             <option value="Done" selected="@(selectedStatus == "Done" ? "selected" : null)">Done</option>
           </select>
         </div>
@@ -71,7 +93,8 @@
              asp-action="Index"
              asp-route-page="@pageNumber"
              asp-route-search="@Context.Request.Query["search"]"
-             asp-route-status="@selectedStatus">
+             asp-route-status="@selectedStatus"
+             asp-route-workspaceId="@ViewBag.SelectedWorkspaceId">
             @pageNumber
           </a>
         </li>
