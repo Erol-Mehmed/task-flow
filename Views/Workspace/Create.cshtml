@@ -1,0 +1,30 @@
+@model task_flow.Models.Workspace
+
+@{
+  ViewData["Title"] = "Create Workspace";
+}
+
+<h2 class="mb-4">Create Workspace</h2>
+
+<div class="card shadow-sm app-card">
+  <div class="card-body">
+    <form asp-action="Create" method="post" class="vstack gap-3">
+      @Html.AntiForgeryToken()
+
+      <div>
+        <label asp-for="Name" class="form-label">Name</label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Create</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+@section Scripts {
+  <partial name="_ValidationScriptsPartial" />
+}

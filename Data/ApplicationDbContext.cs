@@ -12,4 +12,5 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
   }
 
   public DbSet<TaskItem> Task { get; set; }
+  public DbSet<Workspace> Workspaces { get; set; }
 }

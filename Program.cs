@@ -6,6 +6,8 @@ using task_flow.Models;
 using task_flow.Repositories.TaskRepository;
 using task_flow.Services.TaskService;
 using task_flow.Areas.Admin.Services;
+using task_flow.Repositories.WorkspaceRepository;
+using task_flow.Services.WorkspaceService;
 
 DotNetEnv.Env.Load();
 
@@ -36,6 +38,8 @@ builder.Services.AddRazorPages();
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<ITaskService, TaskService>();
+builder.Services.AddScoped<IWorkspaceRepository, WorkspaceRepository>();
+builder.Services.AddScoped<IWorkspaceService, WorkspaceService>();
 
 var app = builder.Build();
 
