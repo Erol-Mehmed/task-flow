@@ -64,10 +64,7 @@ public class BoardController : Controller
       ViewBag.SelectedWorkspaceName = workspace.Name;
     }
 
-    var result = await _taskService.GetTasks(user.Id, search, status, page);
-
-    if (workspaceId.HasValue)
-      result.Tasks = result.Tasks.Where(t => t.WorkspaceId == workspaceId.Value).ToList();
+    var result = await _taskService.GetTasks(user.Id, search, status, page, workspaceId);
 
     ViewBag.CurrentPage = page;
     ViewBag.TotalPages = result.TotalPages;

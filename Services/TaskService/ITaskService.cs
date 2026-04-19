@@ -8,7 +8,8 @@ public interface ITaskService
     string userId,
     string? search,
     string? status,
-    int page);
+    int page,
+    int? workspaceId = null);
 
   Task<IEnumerable<TaskItem>> GetIndexTasksAsync(string userId, bool isAdmin);
   Task<TaskItem?> GetTaskByIdAsync(int id);

@@ -3,7 +3,6 @@ using task_flow.Models;
 using task_flow.Repositories.TaskRepository;
 using TaskItem = task_flow.Models.TaskItem;
 
-
 namespace task_flow.Services.TaskService;
 
 public class TaskService : ITaskService
@@ -50,6 +49,7 @@ public class TaskService : ITaskService
   public async Task DeleteTaskAsync(int taskId, string userId, bool isAdmin)
   {
     var task = await _repo.GetByIdAsync(taskId);
+
     if (task == null)
       throw new KeyNotFoundException("Task not found.");
 
@@ -63,9 +63,13 @@ public class TaskService : ITaskService
     string userId,
     string? search,
     string? status,
-    int page)
+    int page,
+    int? workspaceId = null)
   {
     var query = _repo.GetUserTasks(userId);
+
+    if (workspaceId.HasValue)
+      query = query.Where(t => t.WorkspaceId == workspaceId.Value);
 
     if (!string.IsNullOrWhiteSpace(search))
     {
@@ -80,6 +84,7 @@ public class TaskService : ITaskService
 
     int pageSize = 6;
     var totalItems = await query.CountAsync();
+
     var tasks = await query
       .Skip((page - 1) * pageSize)
       .Take(pageSize)

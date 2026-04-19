@@ -1,0 +1,57 @@
+@model task_flow.Models.TaskItem
+
+@{
+  ViewData["Title"] = "Task Details";
+}
+
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+  <h2 class="mb-0">Task Details</h2>
+
+  <div class="d-flex gap-2">
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+    <a asp-controller="Board"
+       asp-action="Index"
+       asp-route-workspaceId="@Model.WorkspaceId"
+       class="btn btn-outline-secondary">
+      Back to Board
+    </a>
+  </div>
+</div>
+
+<div class="card shadow-sm app-card">
+  <div class="card-body">
+    <dl class="row mb-0">
+      <dt class="col-sm-3">Title</dt>
+      <dd class="col-sm-9">@Model.Title</dd>
+
+      <dt class="col-sm-3">Status</dt>
+      <dd class="col-sm-9">
+        <span class="badge bg-primary">@Model.Status</span>
+      </dd>
+
+      <dt class="col-sm-3">Description</dt>
+      <dd class="col-sm-9">
+        @if (string.IsNullOrWhiteSpace(Model.Description))
+        {
+          <span class="text-muted">No description provided.</span>
+        }
+        else
+        {
+          @Model.Description
+        }
+      </dd>
+
+      <dt class="col-sm-3">Workspace Id</dt>
+      <dd class="col-sm-9">@(Model.WorkspaceId?.ToString() ?? "-")</dd>
+    </dl>
+  </div>
+</div>
+
+<div class="mt-4">
+  <h5>Next (planned)</h5>
+  <ul class="mb-0">
+    <li>Comments</li>
+    <li>Tags</li>
+    <li>Activity Log</li>
+  </ul>
+</div>

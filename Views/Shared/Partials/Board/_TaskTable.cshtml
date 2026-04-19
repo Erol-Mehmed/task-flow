@@ -22,7 +22,17 @@
               data-task-description="@t.Description"
               onclick="openTask(this.dataset.taskTitle, this.dataset.taskDescription, this.dataset.taskId)">
 
-            <td>@t.Title</td>
+            <td>
+              <div class="d-flex align-items-center justify-content-between gap-2">
+                <span>@t.Title</span>
+                <a asp-controller="Task"
+                   asp-action="Details"
+                   asp-route-id="@t.Id"
+                   class="btn btn-sm btn-outline-primary">
+                  Details
+                </a>
+              </div>
+            </td>
             <td>@t.Status</td>
           </tr>
         }

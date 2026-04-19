@@ -111,6 +111,24 @@ public class TaskController : Controller
     return RedirectToAction(nameof(Index));
   }
 
+  public async Task<IActionResult> Details(int id)
+  {
+    var task = await _taskService.GetTaskByIdAsync(id);
+
+    if (task == null)
+      return NotFound();
+
+    var (user, isAdmin) = await GetUserContextAsync();
+
+    if (user == null)
+      return Unauthorized();
+
+    if (!_taskService.CanUserAccessTask(task, user.Id, isAdmin))
+      return Unauthorized();
+
+    return View(task);
+  }
+
   [HttpPost]
   [ValidateAntiForgeryToken]
   public async Task<IActionResult> Delete(int id, string? returnUrl)
