@@ -15,36 +15,36 @@ public class TaskRepository : ITaskRepository
 
   public IQueryable<TaskItem> GetUserTasks(string userId)
   {
-    return _context.Task.Where(t => t.UserId == userId);
+    return _context.Tasks.Where(t => t.UserId == userId);
   }
 
   public async Task<TaskItem?> GetByIdAsync(int id)
   {
-    return await _context.Task.FindAsync(id);
+    return await _context.Tasks.FindAsync(id);
   }
 
   public async Task<IEnumerable<TaskItem>> GetAllAsync()
   {
-    return await _context.Task.ToListAsync();
+    return await _context.Tasks.ToListAsync();
   }
 
   public async Task<TaskItem> CreateAsync(TaskItem task)
   {
-    _context.Task.Add(task);
+    _context.Tasks.Add(task);
     await _context.SaveChangesAsync();
     return task;
   }
 
   public async Task<TaskItem> UpdateAsync(TaskItem task)
   {
-    _context.Task.Update(task);
+    _context.Tasks.Update(task);
     await _context.SaveChangesAsync();
     return task;
   }
 
   public async Task DeleteAsync(TaskItem task)
   {
-    _context.Task.Remove(task);
+    _context.Tasks.Remove(task);
     await _context.SaveChangesAsync();
   }
 }

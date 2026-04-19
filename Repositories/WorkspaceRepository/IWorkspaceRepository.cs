@@ -1,4 +1,4 @@
-using task_flow.Models;
+using task_flow.Models.Workspace;
 
 namespace task_flow.Repositories.WorkspaceRepository;
 

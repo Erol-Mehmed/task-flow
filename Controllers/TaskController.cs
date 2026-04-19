@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using task_flow.Models;
 using task_flow.Services.TaskService;
+using task_flow.Services.WorkspaceService;
 
 namespace task_flow.Controllers;
 
@@ -10,13 +11,16 @@ namespace task_flow.Controllers;
 public class TaskController : Controller
 {
   private readonly ITaskService _taskService;
+  private readonly IWorkspaceService _workspaceService;
   private readonly UserManager<ApplicationUser> _userManager;
 
   public TaskController(
     ITaskService taskService,
+    IWorkspaceService workspaceService,
     UserManager<ApplicationUser> userManager)
   {
     _taskService = taskService;
+    _workspaceService = workspaceService;
     _userManager = userManager;
   }
 
@@ -42,8 +46,27 @@ public class TaskController : Controller
     return View(tasks);
   }
 
-  public IActionResult Create()
+  public async Task<IActionResult> Create(int? workspaceId)
   {
+    var (user, isAdmin) = await GetUserContextAsync();
+
+    if (user == null)
+      return Unauthorized();
+
+    if (workspaceId.HasValue)
+    {
+      var workspace = await _workspaceService.GetWorkspaceByIdAsync(workspaceId.Value);
+
+      if (workspace == null)
+        return NotFound();
+
+      if (!_workspaceService.CanUserAccessWorkspace(workspace, user.Id, isAdmin))
+        return Unauthorized();
+
+      ViewBag.SelectedWorkspaceId = workspace.Id;
+      ViewBag.SelectedWorkspaceName = workspace.Name;
+    }
+
     return View();
   }
 
@@ -54,12 +77,26 @@ public class TaskController : Controller
     if (!ModelState.IsValid)
       return View(task);
 
-    var (user, _) = await GetUserContextAsync();
+    var (user, isAdmin) = await GetUserContextAsync();
 
     if (user == null)
       return Unauthorized();
 
+    if (task.WorkspaceId.HasValue)
+    {
+      var workspace = await _workspaceService.GetWorkspaceByIdAsync(task.WorkspaceId.Value);
+
+      if (workspace == null)
+        return NotFound();
+
+      if (!_workspaceService.CanUserAccessWorkspace(workspace, user.Id, isAdmin))
+        return Unauthorized();
+    }
+
     await _taskService.CreateTaskAsync(task, user.Id);
+
+    if (task.WorkspaceId.HasValue)
+      return RedirectToAction("Index", "Board", new { workspaceId = task.WorkspaceId });
 
     return RedirectToAction(nameof(Index));
   }
@@ -107,6 +144,9 @@ public class TaskController : Controller
     existingTask.Status = task.Status;
 
     await _taskService.UpdateTaskAsync(existingTask, user.Id, isAdmin);
+
+    if (existingTask.WorkspaceId.HasValue)
+      return RedirectToAction("Index", "Board", new { workspaceId = existingTask.WorkspaceId });
 
     return RedirectToAction(nameof(Index));
   }

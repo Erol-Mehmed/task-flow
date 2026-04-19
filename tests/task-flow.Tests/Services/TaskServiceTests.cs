@@ -24,7 +24,7 @@ public class TaskServiceTests
   public async Task GetTasks_ReturnsOnlyTasksForGivenUser()
   {
     var svc = BuildService(nameof(GetTasks_ReturnsOnlyTasksForGivenUser), out var db);
-    db.Task.AddRange(
+    db.Tasks.AddRange(
       new TaskItem { Id = 1, Title = "Mine", UserId = "u1" },
       new TaskItem { Id = 2, Title = "Other", UserId = "u2" });
     await db.SaveChangesAsync();
@@ -39,7 +39,7 @@ public class TaskServiceTests
   public async Task GetTasks_WithSearch_ReturnsMatchingTasks()
   {
     var svc = BuildService(nameof(GetTasks_WithSearch_ReturnsMatchingTasks), out var db);
-    db.Task.AddRange(
+    db.Tasks.AddRange(
       new TaskItem { Id = 1, Title = "Buy Milk", UserId = "u1" },
       new TaskItem { Id = 2, Title = "Read Book", UserId = "u1" });
     await db.SaveChangesAsync();
@@ -54,7 +54,7 @@ public class TaskServiceTests
   public async Task GetTasks_WithSearch_IsCaseInsensitive()
   {
     var svc = BuildService(nameof(GetTasks_WithSearch_IsCaseInsensitive), out var db);
-    db.Task.AddRange(
+    db.Tasks.AddRange(
       new TaskItem { Id = 1, Title = "First Task", UserId = "u1" },
       new TaskItem { Id = 2, Title = "second task", UserId = "u1" });
     await db.SaveChangesAsync();
@@ -69,7 +69,7 @@ public class TaskServiceTests
   public async Task GetTasks_WithStatus_ReturnsMatchingTasks()
   {
     var svc = BuildService(nameof(GetTasks_WithStatus_ReturnsMatchingTasks), out var db);
-    db.Task.AddRange(
+    db.Tasks.AddRange(
       new TaskItem { Id = 1, Title = "T1", Status = "Todo", UserId = "u1" },
       new TaskItem { Id = 2, Title = "T2", Status = "Done", UserId = "u1" });
     await db.SaveChangesAsync();
@@ -84,7 +84,7 @@ public class TaskServiceTests
   public async Task GetTasks_WithSearchAndStatus_AppliesBothFilters()
   {
     var svc = BuildService(nameof(GetTasks_WithSearchAndStatus_AppliesBothFilters), out var db);
-    db.Task.AddRange(
+    db.Tasks.AddRange(
       new TaskItem { Id = 1, Title = "Buy Milk", Status = "Todo", UserId = "u1" },
       new TaskItem { Id = 2, Title = "Buy Bread", Status = "Done", UserId = "u1" },
       new TaskItem { Id = 3, Title = "Read Book", Status = "Done", UserId = "u1" });
@@ -100,7 +100,7 @@ public class TaskServiceTests
   public async Task GetTasks_NoMatch_ReturnsEmptyList()
   {
     var svc = BuildService(nameof(GetTasks_NoMatch_ReturnsEmptyList), out var db);
-    db.Task.Add(new TaskItem { Id = 1, Title = "Buy Milk", UserId = "u1" });
+    db.Tasks.Add(new TaskItem { Id = 1, Title = "Buy Milk", UserId = "u1" });
     await db.SaveChangesAsync();
 
     var (tasks, _) = await svc.GetTasks("u1", "xyz", null, 1);
@@ -115,7 +115,7 @@ public class TaskServiceTests
   {
     var svc = BuildService(nameof(GetTasks_CalculatesCorrectTotalPages), out var db);
     for (int i = 1; i <= 7; i++)
-      db.Task.Add(new TaskItem { Id = i, Title = $"Task {i}", UserId = "u1" });
+      db.Tasks.Add(new TaskItem { Id = i, Title = $"Task {i}", UserId = "u1" });
     await db.SaveChangesAsync();
 
     var (_, totalPages) = await svc.GetTasks("u1", null, null, 1);
@@ -128,7 +128,7 @@ public class TaskServiceTests
   {
     var svc = BuildService(nameof(GetTasks_FirstPage_ReturnsSixItems), out var db);
     for (int i = 1; i <= 7; i++)
-      db.Task.Add(new TaskItem { Id = i, Title = $"Task {i}", UserId = "u1" });
+      db.Tasks.Add(new TaskItem { Id = i, Title = $"Task {i}", UserId = "u1" });
     await db.SaveChangesAsync();
 
     var (tasks, _) = await svc.GetTasks("u1", null, null, 1);
@@ -141,7 +141,7 @@ public class TaskServiceTests
   {
     var svc = BuildService(nameof(GetTasks_SecondPage_ReturnsRemainingItems), out var db);
     for (int i = 1; i <= 7; i++)
-      db.Task.Add(new TaskItem { Id = i, Title = $"Task {i}", UserId = "u1" });
+      db.Tasks.Add(new TaskItem { Id = i, Title = $"Task {i}", UserId = "u1" });
     await db.SaveChangesAsync();
 
     var (tasks, _) = await svc.GetTasks("u1", null, null, 2);
@@ -154,7 +154,7 @@ public class TaskServiceTests
   {
     var svc = BuildService(nameof(GetTasks_ExactlyOnePage_TotalPagesIsOne), out var db);
     for (int i = 1; i <= 6; i++)
-      db.Task.Add(new TaskItem { Id = i, Title = $"Task {i}", UserId = "u1" });
+      db.Tasks.Add(new TaskItem { Id = i, Title = $"Task {i}", UserId = "u1" });
     await db.SaveChangesAsync();
 
     var (tasks, totalPages) = await svc.GetTasks("u1", null, null, 1);
@@ -180,7 +180,7 @@ public class TaskServiceTests
   public async Task GetTasks_ReturnsTasksOrderedById()
   {
     var svc = BuildService(nameof(GetTasks_ReturnsTasksOrderedById), out var db);
-    db.Task.AddRange(
+    db.Tasks.AddRange(
       new TaskItem { Id = 3, Title = "C", UserId = "u1" },
       new TaskItem { Id = 1, Title = "A", UserId = "u1" },
       new TaskItem { Id = 2, Title = "B", UserId = "u1" });

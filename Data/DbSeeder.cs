@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using task_flow.Models;
+using task_flow.Models.Workspace;
 
 namespace task_flow.Data;
 
@@ -46,33 +47,65 @@ public static class DbSeeder
       }
     }
 
-    // Seed some tasks for the admin user
-    if (!context.Task.Any() && adminUser != null)
+    if (adminUser != null)
     {
-      context.Task.AddRange(
-        new TaskItem
+      await SeedWorkspacesAndTasks(context, adminUser);
+    }
+  }
+
+  private static async Task SeedWorkspacesAndTasks(
+    ApplicationDbContext context,
+    ApplicationUser adminUser)
+  {
+    // Check if default workspace already exists
+    var defaultWorkspace = context.Workspaces
+      .FirstOrDefault(w => w.UserId == adminUser.Id && w.Name == "Default");
+
+    if (defaultWorkspace == null)
+    {
+      defaultWorkspace = new Workspace
+      {
+        Name = "Default",
+        UserId = adminUser.Id,
+        User = adminUser
+      };
+
+      context.Workspaces.Add(defaultWorkspace);
+      await context.SaveChangesAsync();
+    }
+
+    // Seed sample tasks for default workspace
+    if (!context.Tasks.Any(t => t.WorkspaceId == defaultWorkspace.Id))
+    {
+      var tasks = new List<TaskItem>
+      {
+        new()
         {
           Title = "[SEED] Setup project structure",
-          Description = "This is an example task created by the seeder to demonstrate functionality.",
-          Status = "Todo",
-          UserId = adminUser.Id
+          Description = "Organize folders and create initial project files.",
+          Status = "Done",
+          UserId = adminUser.Id,
+          WorkspaceId = defaultWorkspace.Id
         },
-        new TaskItem
+        new()
+        {
+          Title = "[SEED] Design database schema",
+          Description = "Create entity relationships and migrations for the application.",
+          Status = "InProgress",
+          UserId = adminUser.Id,
+          WorkspaceId = defaultWorkspace.Id
+        },
+        new()
         {
           Title = "[SEED] Implement authentication",
-          Description = "Example task for showing how authentication tasks appear in the system.",
-          Status = "InProgress",
-          UserId = adminUser.Id
-        },
-        new TaskItem
-        {
-          Title = "[SEED] UI layout for dashboard",
-          Description = "Example task used to demonstrate UI rendering in the task board.",
-          Status = "Done",
-          UserId = adminUser.Id
+          Description = "Add login and registration functionality with role-based access.",
+          Status = "Todo",
+          UserId = adminUser.Id,
+          WorkspaceId = defaultWorkspace.Id
         }
-      );
+      };
 
+      context.Tasks.AddRange(tasks);
       await context.SaveChangesAsync();
     }
   }

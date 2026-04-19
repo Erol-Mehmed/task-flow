@@ -7,7 +7,7 @@ public class TaskItem
   public int Id { get; set; }
   public int? WorkspaceId { get; set; }
 
-  public Workspace? Workspace { get; set; }
+  public task_flow.Models.Workspace.Workspace? Workspace { get; set; }
 
   [Required] [MaxLength(50)] public required string Title { get; set; }
 

@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using task_flow.Data;
-using task_flow.Models;
+using task_flow.Models.Workspace;
 
 namespace task_flow.Repositories.WorkspaceRepository;
 

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace task_flow.Models;
+namespace task_flow.Models.Workspace;
 
 public class Workspace
 {

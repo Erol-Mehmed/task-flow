@@ -11,6 +11,14 @@
     <form asp-action="Create" method="post" class="vstack gap-3">
       @Html.AntiForgeryToken()
 
+      @if (ViewBag.SelectedWorkspaceId != null)
+      {
+        <input type="hidden" name="WorkspaceId" value="@ViewBag.SelectedWorkspaceId"/>
+        <div class="alert alert-info" role="alert">
+          Creating task in: <strong>@ViewBag.SelectedWorkspaceName</strong>
+        </div>
+      }
+
       <div>
         <label asp-for="Title" class="form-label">Title</label>
         <input asp-for="Title" class="form-control"/>
@@ -19,7 +27,8 @@
 
       <div>
         <label asp-for="Description" class="form-label">Description</label>
-        <input asp-for="Description" class="form-control"/>
+        <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
       </div>
 
       <div>
@@ -38,3 +47,7 @@
     </form>
   </div>
 </div>
+
+@section Scripts {
+  <partial name="_ValidationScriptsPartial"/>
+}

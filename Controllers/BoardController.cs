@@ -48,21 +48,28 @@ public class BoardController : Controller
     if (user == null)
       return Unauthorized();
 
-    if (workspaceId.HasValue)
+    if (!workspaceId.HasValue)
     {
-      var workspace = await _workspaceService.GetWorkspaceByIdAsync(workspaceId.Value);
+      ViewBag.SelectedWorkspaceId = null;
+      ViewBag.SelectedWorkspaceName = null;
+      ViewBag.CurrentPage = 1;
+      ViewBag.TotalPages = 1;
 
-      if (workspace == null)
-        return NotFound();
-
-      var isAdmin = User.IsInRole("Admin");
-
-      if (!_workspaceService.CanUserAccessWorkspace(workspace, user.Id, isAdmin))
-        return Unauthorized();
-
-      ViewBag.SelectedWorkspaceId = workspace.Id;
-      ViewBag.SelectedWorkspaceName = workspace.Name;
+      return View(new List<TaskItem>());
     }
+
+    var workspace = await _workspaceService.GetWorkspaceByIdAsync(workspaceId.Value);
+
+    if (workspace == null)
+      return NotFound();
+
+    var isAdmin = User.IsInRole("Admin");
+
+    if (!_workspaceService.CanUserAccessWorkspace(workspace, user.Id, isAdmin))
+      return Unauthorized();
+
+    ViewBag.SelectedWorkspaceId = workspace.Id;
+    ViewBag.SelectedWorkspaceName = workspace.Name;
 
     var result = await _taskService.GetTasks(user.Id, search, status, page, workspaceId);
 

@@ -40,7 +40,32 @@
         <small class="text-muted">Click a row to view task details</small>
       }
     </div>
+
+    @if (ViewBag.SelectedWorkspaceId != null)
+    {
+      <a asp-controller="Task"
+         asp-action="Create"
+         asp-route-workspaceId="@ViewBag.SelectedWorkspaceId"
+         class="btn btn-success">
+        Create Task
+      </a>
+    }
   </div>
+
+  @if (ViewBag.SelectedWorkspaceId == null)
+  {
+    <div class="card shadow-sm app-card mb-4">
+      <div class="card-body text-center py-4">
+        <h5 class="mb-2">No workspace selected</h5>
+        <p class="text-muted mb-3">Choose a workspace to see its board tasks.</p>
+        <a asp-controller="Workspace" asp-action="Index" class="btn btn-primary">
+          Go to Workspaces
+        </a>
+      </div>
+    </div>
+
+    return;
+  }
 
   <form method="get" class="card shadow-sm app-card mb-4">
     @if (ViewBag.SelectedWorkspaceId != null)

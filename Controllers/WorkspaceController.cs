@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using task_flow.Models;
+using task_flow.Models.Workspace;
 using task_flow.Services.WorkspaceService;
 
 namespace task_flow.Controllers;
@@ -48,18 +49,22 @@ public class WorkspaceController : Controller
 
   [HttpPost]
   [ValidateAntiForgeryToken]
-  public async Task<IActionResult> Create(Workspace workspace)
+  public async Task<IActionResult> Create(WorkspaceCreateViewModel model)
   {
     if (!ModelState.IsValid)
-      return View(workspace);
+      return View(model);
 
     var (user, _) = await GetUserContextAsync();
-
     if (user == null)
       return Unauthorized();
 
-    await _workspaceService.CreateWorkspaceAsync(workspace, user.Id);
+    var workspace = new Workspace
+    {
+      Name = model.Name,
+      UserId = user.Id
+    };
 
+    await _workspaceService.CreateWorkspaceAsync(workspace, user.Id);
     return RedirectToAction(nameof(Index));
   }
 
