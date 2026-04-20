@@ -2,6 +2,7 @@
 
 @{
   ViewData["Title"] = "Edit Task";
+  var returnUrl = ViewBag.ReturnUrl as string;
 }
 
 <h2 class="mb-4">Edit Task</h2>
@@ -13,6 +14,23 @@
 
       <input type="hidden" asp-for="Id"/>
 
+      @if (!string.IsNullOrWhiteSpace(returnUrl))
+      {
+        <input type="hidden" name="returnUrl" value="@returnUrl"/>
+      }
+
+      @if (Model.WorkspaceId.HasValue)
+      {
+        <input type="hidden" asp-for="WorkspaceId"/>
+      }
+
+      @if (ViewBag.SelectedWorkspaceName != null)
+      {
+        <div class="alert alert-info mb-0">
+          Editing in workspace: <strong>@ViewBag.SelectedWorkspaceName</strong>
+        </div>
+      }
+
       <div>
         <label asp-for="Title" class="form-label">Title</label>
         <input asp-for="Title" class="form-control"/>
@@ -21,7 +39,8 @@
 
       <div>
         <label asp-for="Description" class="form-label">Description</label>
-        <input asp-for="Description" class="form-control"/>
+        <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
       </div>
 
       <div>
@@ -35,8 +54,25 @@
 
       <div class="d-flex gap-2">
         <button type="submit" class="btn btn-primary">Save</button>
-        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+
+        @if (!string.IsNullOrWhiteSpace(returnUrl))
+        {
+          <a href="@returnUrl" class="btn btn-outline-secondary">Cancel</a>
+        }
+        else if (Model.WorkspaceId.HasValue)
+        {
+          <a asp-controller="Board" asp-action="Index" asp-route-workspaceId="@Model.WorkspaceId"
+             class="btn btn-outline-secondary">Cancel</a>
+        }
+        else
+        {
+          <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+        }
       </div>
     </form>
   </div>
 </div>
+
+@section Scripts {
+  <partial name="_ValidationScriptsPartial"/>
+}

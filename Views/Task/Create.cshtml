@@ -2,6 +2,7 @@
 
 @{
   ViewData["Title"] = "Create Task";
+  var returnUrl = ViewBag.ReturnUrl as string;
 }
 
 <h2 class="mb-4">Create Task</h2>
@@ -11,11 +12,20 @@
     <form asp-action="Create" method="post" class="vstack gap-3">
       @Html.AntiForgeryToken()
 
-      @if (ViewBag.SelectedWorkspaceId != null)
+      @if (!string.IsNullOrWhiteSpace(returnUrl))
       {
-        <input type="hidden" name="WorkspaceId" value="@ViewBag.SelectedWorkspaceId"/>
-        <div class="alert alert-info" role="alert">
-          Creating task in: <strong>@ViewBag.SelectedWorkspaceName</strong>
+        <input type="hidden" name="returnUrl" value="@returnUrl"/>
+      }
+
+      @if (Model.WorkspaceId.HasValue)
+      {
+        <input type="hidden" asp-for="WorkspaceId"/>
+      }
+
+      @if (ViewBag.SelectedWorkspaceName != null)
+      {
+        <div class="alert alert-info mb-0">
+          Creating in workspace: <strong>@ViewBag.SelectedWorkspaceName</strong>
         </div>
       }
 
@@ -42,7 +52,20 @@
 
       <div class="d-flex gap-2">
         <button type="submit" class="btn btn-primary">Create</button>
-        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+
+        @if (!string.IsNullOrWhiteSpace(returnUrl))
+        {
+          <a href="@returnUrl" class="btn btn-outline-secondary">Cancel</a>
+        }
+        else if (Model.WorkspaceId.HasValue)
+        {
+          <a asp-controller="Board" asp-action="Index" asp-route-workspaceId="@Model.WorkspaceId"
+             class="btn btn-outline-secondary">Cancel</a>
+        }
+        else
+        {
+          <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+        }
       </div>
     </form>
   </div>

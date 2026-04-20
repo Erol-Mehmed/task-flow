@@ -43,11 +43,10 @@ public class TaskController : Controller
       return Unauthorized();
 
     var tasks = await _taskService.GetIndexTasksAsync(user.Id, isAdmin);
-
     return View(tasks);
   }
 
-  public async Task<IActionResult> Create(int? workspaceId)
+  public async Task<IActionResult> Create(int? workspaceId, string? returnUrl)
   {
     var (user, isAdmin) = await GetUserContextAsync();
 
@@ -68,15 +67,37 @@ public class TaskController : Controller
       ViewBag.SelectedWorkspaceName = workspace.Name;
     }
 
-    return View();
+    ViewBag.ReturnUrl = returnUrl;
+
+    var model = new TaskItem
+    {
+      Title = string.Empty,
+      WorkspaceId = workspaceId
+    };
+
+    return View(model);
   }
 
   [HttpPost]
   [ValidateAntiForgeryToken]
-  public async Task<IActionResult> Create(TaskItem task)
+  public async Task<IActionResult> Create(TaskItem task, string? returnUrl)
   {
     if (!ModelState.IsValid)
+    {
+      ViewBag.ReturnUrl = returnUrl;
+
+      if (task.WorkspaceId.HasValue)
+      {
+        var workspaceForView = await _workspaceService.GetWorkspaceByIdAsync(task.WorkspaceId.Value);
+        if (workspaceForView != null)
+        {
+          ViewBag.SelectedWorkspaceId = workspaceForView.Id;
+          ViewBag.SelectedWorkspaceName = workspaceForView.Name;
+        }
+      }
+
       return View(task);
+    }
 
     var (user, isAdmin) = await GetUserContextAsync();
 
@@ -96,13 +117,16 @@ public class TaskController : Controller
 
     await _taskService.CreateTaskAsync(task, user.Id);
 
+    if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+      return LocalRedirect(returnUrl);
+
     if (task.WorkspaceId.HasValue)
       return RedirectToAction("Index", "Board", new { workspaceId = task.WorkspaceId });
 
     return RedirectToAction(nameof(Index));
   }
 
-  public async Task<IActionResult> Edit(int id)
+  public async Task<IActionResult> Edit(int id, string? returnUrl)
   {
     var task = await _taskService.GetTaskByIdAsync(id);
 
@@ -117,15 +141,41 @@ public class TaskController : Controller
     if (!_taskService.CanUserAccessTask(task, user.Id, isAdmin))
       return Unauthorized();
 
+    ViewBag.ReturnUrl = returnUrl;
+
+    if (task.WorkspaceId.HasValue)
+    {
+      var workspace = await _workspaceService.GetWorkspaceByIdAsync(task.WorkspaceId.Value);
+      if (workspace != null)
+      {
+        ViewBag.SelectedWorkspaceId = workspace.Id;
+        ViewBag.SelectedWorkspaceName = workspace.Name;
+      }
+    }
+
     return View(task);
   }
 
   [HttpPost]
   [ValidateAntiForgeryToken]
-  public async Task<IActionResult> Edit(TaskItem task)
+  public async Task<IActionResult> Edit(TaskItem task, string? returnUrl)
   {
     if (!ModelState.IsValid)
+    {
+      ViewBag.ReturnUrl = returnUrl;
+
+      if (task.WorkspaceId.HasValue)
+      {
+        var workspaceForView = await _workspaceService.GetWorkspaceByIdAsync(task.WorkspaceId.Value);
+        if (workspaceForView != null)
+        {
+          ViewBag.SelectedWorkspaceId = workspaceForView.Id;
+          ViewBag.SelectedWorkspaceName = workspaceForView.Name;
+        }
+      }
+
       return View(task);
+    }
 
     var existingTask = await _taskService.GetTaskByIdAsync(task.Id);
 
@@ -140,11 +190,26 @@ public class TaskController : Controller
     if (!_taskService.CanUserAccessTask(existingTask, user.Id, isAdmin))
       return Unauthorized();
 
+    if (task.WorkspaceId.HasValue)
+    {
+      var workspace = await _workspaceService.GetWorkspaceByIdAsync(task.WorkspaceId.Value);
+
+      if (workspace == null)
+        return NotFound();
+
+      if (!_workspaceService.CanUserAccessWorkspace(workspace, user.Id, isAdmin))
+        return Unauthorized();
+    }
+
     existingTask.Title = task.Title;
     existingTask.Description = task.Description;
     existingTask.Status = task.Status;
+    existingTask.WorkspaceId = task.WorkspaceId;
 
     await _taskService.UpdateTaskAsync(existingTask, user.Id, isAdmin);
+
+    if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+      return LocalRedirect(returnUrl);
 
     if (existingTask.WorkspaceId.HasValue)
       return RedirectToAction("Index", "Board", new { workspaceId = existingTask.WorkspaceId });

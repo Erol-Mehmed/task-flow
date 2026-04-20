@@ -59,7 +59,7 @@ public class WorkspaceController : Controller
     if (user == null)
       return Unauthorized();
 
-    var workspace = new task_flow.Models.Workspace.Workspace
+    var workspace = new Workspace
     {
       Name = model.Name
     };
@@ -89,7 +89,7 @@ public class WorkspaceController : Controller
 
   [HttpPost]
   [ValidateAntiForgeryToken]
-  public async Task<IActionResult> Edit(int id, task_flow.Models.Workspace.Workspace workspace)
+  public async Task<IActionResult> Edit(int id, Workspace workspace)
   {
     if (id != workspace.Id)
       return NotFound();

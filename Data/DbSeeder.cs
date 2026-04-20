@@ -57,9 +57,9 @@ public static class DbSeeder
     ApplicationDbContext context,
     ApplicationUser adminUser)
   {
-    // Check if default workspace already exists
+    // Use any existing workspace for admin; create "Default" only if none exist.
     var defaultWorkspace = context.Workspaces
-      .FirstOrDefault(w => w.UserId == adminUser.Id && w.Name == "Default");
+      .FirstOrDefault(w => w.UserId == adminUser.Id);
 
     if (defaultWorkspace == null)
     {
