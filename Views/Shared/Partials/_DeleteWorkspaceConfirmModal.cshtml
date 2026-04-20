@@ -1,0 +1,47 @@
+<div class="modal fade" id="deleteWorkspaceConfirmModal" tabindex="-1"
+     aria-labelledby="deleteWorkspaceConfirmModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteWorkspaceConfirmModalLabel">Delete workspace</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        Are you sure you want to delete
+        <strong id="deleteWorkspaceName">this workspace</strong>?
+        <div class="text-muted mt-2">All tasks in this workspace will be deleted.</div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+
+        <form id="deleteWorkspaceForm" method="post">
+          @Html.AntiForgeryToken()
+          <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.workspaceDeleteConfirm = {
+    open: function (workspaceId, workspaceName) {
+      const modalElement = document.getElementById("deleteWorkspaceConfirmModal");
+      const nameElement = document.getElementById("deleteWorkspaceName");
+      const formElement = document.getElementById("deleteWorkspaceForm");
+
+      if (!modalElement || !nameElement || !formElement) {
+        return;
+      }
+
+      nameElement.textContent = workspaceName || "this workspace";
+      formElement.action = "/Workspace/Delete/" + workspaceId;
+
+      const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+      modal.show();
+    }
+  };
+</script>

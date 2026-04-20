@@ -15,7 +15,9 @@ public class TaskRepository : ITaskRepository
 
   public IQueryable<TaskItem> GetUserTasks(string userId)
   {
-    return _context.Tasks.Where(t => t.UserId == userId);
+    return _context.Tasks
+      .Include(t => t.Workspace)
+      .Where(t => t.UserId == userId);
   }
 
   public async Task<TaskItem?> GetByIdAsync(int id)
@@ -25,7 +27,9 @@ public class TaskRepository : ITaskRepository
 
   public async Task<IEnumerable<TaskItem>> GetAllAsync()
   {
-    return await _context.Tasks.ToListAsync();
+    return await _context.Tasks
+      .Include(t => t.Workspace)
+      .ToListAsync();
   }
 
   public async Task<TaskItem> CreateAsync(TaskItem task)

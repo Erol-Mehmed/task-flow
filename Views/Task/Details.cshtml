@@ -6,16 +6,7 @@
 
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
   <h2 class="mb-0">Task Details</h2>
-
-  <div class="d-flex gap-2">
-    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
-    <a asp-controller="Board"
-       asp-action="Index"
-       asp-route-workspaceId="@Model.WorkspaceId"
-       class="btn btn-outline-secondary">
-      Back to Board
-    </a>
-  </div>
+  <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
 </div>
 
 <div class="card shadow-sm app-card">

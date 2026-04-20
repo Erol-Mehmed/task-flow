@@ -55,16 +55,17 @@ public class WorkspaceController : Controller
       return View(model);
 
     var (user, _) = await GetUserContextAsync();
+
     if (user == null)
       return Unauthorized();
 
-    var workspace = new Workspace
+    var workspace = new task_flow.Models.Workspace.Workspace
     {
-      Name = model.Name,
-      UserId = user.Id
+      Name = model.Name
     };
 
     await _workspaceService.CreateWorkspaceAsync(workspace, user.Id);
+
     return RedirectToAction(nameof(Index));
   }
 
@@ -88,7 +89,7 @@ public class WorkspaceController : Controller
 
   [HttpPost]
   [ValidateAntiForgeryToken]
-  public async Task<IActionResult> Edit(int id, Workspace workspace)
+  public async Task<IActionResult> Edit(int id, task_flow.Models.Workspace.Workspace workspace)
   {
     if (id != workspace.Id)
       return NotFound();
@@ -127,6 +128,13 @@ public class WorkspaceController : Controller
     try
     {
       await _workspaceService.DeleteWorkspaceAsync(id, user.Id, isAdmin);
+
+      if (Request.Cookies.TryGetValue("SelectedWorkspaceId", out var selectedWorkspaceId) &&
+          int.TryParse(selectedWorkspaceId, out var selectedId) &&
+          selectedId == id)
+      {
+        Response.Cookies.Delete("SelectedWorkspaceId");
+      }
     }
     catch (KeyNotFoundException)
     {

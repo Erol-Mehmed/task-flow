@@ -48,6 +48,13 @@ public class BoardController : Controller
     if (user == null)
       return Unauthorized();
 
+    if (!workspaceId.HasValue &&
+        Request.Cookies.TryGetValue("SelectedWorkspaceId", out var cookieWorkspaceId) &&
+        int.TryParse(cookieWorkspaceId, out var parsedWorkspaceId))
+    {
+      workspaceId = parsedWorkspaceId;
+    }
+
     if (!workspaceId.HasValue)
     {
       ViewBag.SelectedWorkspaceId = null;
@@ -61,12 +68,25 @@ public class BoardController : Controller
     var workspace = await _workspaceService.GetWorkspaceByIdAsync(workspaceId.Value);
 
     if (workspace == null)
-      return NotFound();
+    {
+      Response.Cookies.Delete("SelectedWorkspaceId");
+      return RedirectToAction(nameof(Index));
+    }
 
     var isAdmin = User.IsInRole("Admin");
 
     if (!_workspaceService.CanUserAccessWorkspace(workspace, user.Id, isAdmin))
-      return Unauthorized();
+    {
+      Response.Cookies.Delete("SelectedWorkspaceId");
+      return RedirectToAction(nameof(Index));
+    }
+
+    Response.Cookies.Append("SelectedWorkspaceId", workspace.Id.ToString(), new CookieOptions
+    {
+      Expires = DateTimeOffset.UtcNow.AddDays(7),
+      HttpOnly = true,
+      SameSite = SameSiteMode.Lax
+    });
 
     ViewBag.SelectedWorkspaceId = workspace.Id;
     ViewBag.SelectedWorkspaceName = workspace.Name;

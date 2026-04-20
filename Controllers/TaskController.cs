@@ -34,6 +34,7 @@ public class TaskController : Controller
     return (user, User.IsInRole("Admin"));
   }
 
+  [Authorize(Roles = "Admin")]
   public async Task<IActionResult> Index()
   {
     var (user, isAdmin) = await GetUserContextAsync();
