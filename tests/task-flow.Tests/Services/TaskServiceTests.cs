@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using task_flow.Data;
 using task_flow.Models;
 using task_flow.Repositories.TaskRepository;
+using task_flow.Services.ActivityService;
 using task_flow.Services.TaskService;
 
 namespace task_flow.Tests.Services;
@@ -15,7 +17,12 @@ public class TaskServiceTests
         .UseInMemoryDatabase(dbName)
         .Options);
     var repo = new TaskRepository(db);
-    return new TaskService(repo);
+    var activityService = new Mock<IActivityService>();
+    activityService
+      .Setup(x => x.LogAsync(It.IsAny<int?>(), It.IsAny<string?>(), It.IsAny<string>(), It.IsAny<string?>()))
+      .Returns(Task.CompletedTask);
+
+    return new TaskService(repo, activityService.Object);
   }
 
   // ── Filtering ────────────────────────────────────────────────────────────

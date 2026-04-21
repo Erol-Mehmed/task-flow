@@ -47,12 +47,46 @@ public class TagController : Controller
     if (!_taskService.CanUserAccessTask(task, user.Id, isAdmin))
       return Unauthorized();
 
-    await _tagService.AddTagToTaskAsync(model.TaskId, model.Name);
+    await _tagService.AddTagToTaskAsync(model.TaskId, model.Name, user.Id);
 
     if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
       return LocalRedirect(returnUrl);
 
     return RedirectToAction("Details", "Task", new { id = model.TaskId });
+  }
+
+  [HttpPost]
+  [ValidateAntiForgeryToken]
+  public async Task<IActionResult> Delete(int taskId, int tagId, string? returnUrl)
+  {
+    var user = await _userManager.GetUserAsync(User);
+
+    if (user == null)
+      return Unauthorized();
+
+    var task = await _taskService.GetTaskByIdAsync(taskId);
+
+    if (task == null)
+      return NotFound();
+
+    var isAdmin = User.IsInRole("Admin");
+
+    if (!_taskService.CanUserAccessTask(task, user.Id, isAdmin))
+      return Unauthorized();
+
+    try
+    {
+      await _tagService.RemoveTagFromTaskAsync(taskId, tagId, user.Id);
+    }
+    catch (KeyNotFoundException)
+    {
+      return NotFound();
+    }
+
+    if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+      return LocalRedirect(returnUrl);
+
+    return RedirectToAction("Details", "Task", new { id = taskId });
   }
 }
 

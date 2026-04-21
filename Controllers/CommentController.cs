@@ -54,4 +54,38 @@ public class CommentController : Controller
 
     return RedirectToAction("Details", "Task", new { id = model.TaskId });
   }
+
+  [HttpPost]
+  [ValidateAntiForgeryToken]
+  public async Task<IActionResult> Delete(int id, int taskId, string? returnUrl)
+  {
+    var user = await _userManager.GetUserAsync(User);
+
+    if (user == null)
+      return Unauthorized();
+
+    var task = await _taskService.GetTaskByIdAsync(taskId);
+
+    if (task == null)
+      return NotFound();
+
+    var isAdmin = User.IsInRole("Admin");
+
+    if (!_taskService.CanUserAccessTask(task, user.Id, isAdmin))
+      return Unauthorized();
+
+    try
+    {
+      await _commentService.DeleteCommentAsync(id, user.Id);
+    }
+    catch (KeyNotFoundException)
+    {
+      return NotFound();
+    }
+
+    if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+      return LocalRedirect(returnUrl);
+
+    return RedirectToAction("Details", "Task", new { id = taskId });
+  }
 }

@@ -16,7 +16,9 @@ public class TaskRepository : ITaskRepository
   public IQueryable<TaskItem> GetVisibleTasks()
   {
     return _context.Tasks
-      .Include(t => t.Workspace);
+      .Include(t => t.Workspace)
+      .Include(t => t.TaskTags)
+      .ThenInclude(tt => tt.Tag);
   }
 
   public async Task<TaskItem?> GetByIdAsync(int id)
@@ -28,6 +30,8 @@ public class TaskRepository : ITaskRepository
   {
     return await _context.Tasks
       .Include(t => t.Workspace)
+      .Include(t => t.TaskTags)
+      .ThenInclude(tt => tt.Tag)
       .ToListAsync();
   }
 

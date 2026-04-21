@@ -22,9 +22,19 @@ public class CommentRepository : ICommentRepository
       .ToListAsync();
   }
 
+  public async Task<Comment?> GetByIdAsync(int id)
+  {
+    return await _context.Comments.FindAsync(id);
+  }
+
   public async Task AddAsync(Comment comment)
   {
     await _context.Comments.AddAsync(comment);
+  }
+
+  public void Remove(Comment comment)
+  {
+    _context.Comments.Remove(comment);
   }
 
   public async Task SaveChangesAsync()

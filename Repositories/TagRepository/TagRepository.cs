@@ -42,6 +42,16 @@ public class TagRepository : ITagRepository
     await _context.TaskTags.AddAsync(taskTag);
   }
 
+  public async Task<TaskTag?> GetTaskTagAsync(int taskId, int tagId)
+  {
+    return await _context.TaskTags.FirstOrDefaultAsync(tt => tt.TaskItemId == taskId && tt.TagId == tagId);
+  }
+
+  public void RemoveTaskTag(TaskTag taskTag)
+  {
+    _context.TaskTags.Remove(taskTag);
+  }
+
   public async Task SaveChangesAsync()
   {
     await _context.SaveChangesAsync();

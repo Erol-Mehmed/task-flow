@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using task_flow.Repositories.TaskRepository;
+using task_flow.Services.ActivityService;
 using TaskItem = task_flow.Models.TaskItem;
 
 namespace task_flow.Services.TaskService;
@@ -7,10 +8,12 @@ namespace task_flow.Services.TaskService;
 public class TaskService : ITaskService
 {
   private readonly ITaskRepository _repo;
+  private readonly IActivityService _activityService;
 
-  public TaskService(ITaskRepository repo)
+  public TaskService(ITaskRepository repo, IActivityService activityService)
   {
     _repo = repo;
+    _activityService = activityService;
   }
 
   public bool CanUserAccessTask(TaskItem task, string userId, bool isAdmin)
@@ -37,7 +40,11 @@ public class TaskService : ITaskService
   public async Task<TaskItem> CreateTaskAsync(TaskItem task, string userId)
   {
     task.UserId = userId;
-    return await _repo.CreateAsync(task);
+    var created = await _repo.CreateAsync(task);
+
+    await _activityService.LogAsync(created.Id, userId, "TaskCreated", $"Task '{created.Title}' created.");
+
+    return created;
   }
 
   public async Task UpdateTaskAsync(TaskItem task, string userId, bool isAdmin)
@@ -45,7 +52,12 @@ public class TaskService : ITaskService
     if (!CanUserAccessTask(task, userId, isAdmin))
       throw new UnauthorizedAccessException("You don't have permission to update this task.");
 
+    var updatedTitle = task.Title;
+    var updatedTaskId = task.Id;
+
     await _repo.UpdateAsync(task);
+
+    await _activityService.LogAsync(updatedTaskId, userId, "TaskUpdated", $"Task '{updatedTitle}' updated.");
   }
 
   public async Task DeleteTaskAsync(int taskId, string userId, bool isAdmin)
@@ -58,7 +70,12 @@ public class TaskService : ITaskService
     if (!CanUserAccessTask(task, userId, isAdmin))
       throw new UnauthorizedAccessException("You don't have permission to delete this task.");
 
+    var deletedTaskId = task.Id;
+    var deletedTaskTitle = task.Title;
+
     await _repo.DeleteAsync(task);
+
+    await _activityService.LogAsync(deletedTaskId, userId, "TaskDeleted", $"Task '{deletedTaskTitle}' deleted.");
   }
 
   public async Task<(List<TaskItem> Tasks, int TotalPages)> GetTasks(

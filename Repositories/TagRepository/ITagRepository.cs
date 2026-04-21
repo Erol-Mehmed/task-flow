@@ -9,6 +9,8 @@ public interface ITagRepository
   Task AddTagAsync(Tag tag);
   Task<bool> TaskHasTagAsync(int taskId, int tagId);
   Task AddTaskTagAsync(TaskTag taskTag);
+  Task<TaskTag?> GetTaskTagAsync(int taskId, int tagId);
+  void RemoveTaskTag(TaskTag taskTag);
   Task SaveChangesAsync();
 }
 

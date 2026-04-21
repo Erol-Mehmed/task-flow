@@ -7,6 +7,7 @@
       <tr>
         <th>Title</th>
         <th>Status</th>
+        <th>Tags</th>
       </tr>
       </thead>
       <tbody>
@@ -34,13 +35,28 @@
               </div>
             </td>
             <td>@t.Status</td>
+            <td>
+              @if (t.TaskTags.Any())
+              {
+                <div class="d-flex flex-wrap gap-1">
+                  @foreach (var taskTag in t.TaskTags)
+                  {
+                    <span class="badge bg-secondary">@taskTag.Tag?.Name</span>
+                  }
+                </div>
+              }
+              else
+              {
+                <span class="text-muted">-</span>
+              }
+            </td>
           </tr>
         }
       }
       else
       {
         <tr>
-          <td colspan="2" class="text-center text-muted py-4">No tasks found.</td>
+          <td colspan="3" class="text-center text-muted py-4">No tasks found.</td>
         </tr>
       }
       </tbody>
