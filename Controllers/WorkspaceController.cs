@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using task_flow.Models;
 using task_flow.Models.Workspace;
 using task_flow.Services.WorkspaceService;
@@ -31,6 +33,15 @@ public class WorkspaceController : Controller
     return (user, User.IsInRole("Admin"));
   }
 
+  private static bool IsDuplicateWorkspaceName(DbUpdateException ex)
+  {
+    if (ex.InnerException is not PostgresException pgEx)
+      return false;
+
+    return pgEx.SqlState == PostgresErrorCodes.UniqueViolation &&
+           pgEx.ConstraintName == "IX_Workspace_UserId_Name";
+  }
+
   public async Task<IActionResult> Index()
   {
     var (user, isAdmin) = await GetUserContextAsync();
@@ -44,7 +55,7 @@ public class WorkspaceController : Controller
 
   public IActionResult Create()
   {
-    return View();
+    return View(new WorkspaceCreateViewModel());
   }
 
   [HttpPost]
@@ -64,7 +75,15 @@ public class WorkspaceController : Controller
       Name = model.Name
     };
 
-    await _workspaceService.CreateWorkspaceAsync(workspace, user.Id);
+    try
+    {
+      await _workspaceService.CreateWorkspaceAsync(workspace, user.Id);
+    }
+    catch (DbUpdateException ex) when (IsDuplicateWorkspaceName(ex))
+    {
+      ModelState.AddModelError(nameof(model.Name), "You already have a workspace with this name.");
+      return View(model);
+    }
 
     return RedirectToAction(nameof(Index));
   }
@@ -84,18 +103,24 @@ public class WorkspaceController : Controller
     if (!_workspaceService.CanUserAccessWorkspace(workspace, user.Id, isAdmin))
       return Unauthorized();
 
-    return View(workspace);
+    var model = new WorkspaceEditViewModel
+    {
+      Id = workspace.Id,
+      Name = workspace.Name
+    };
+
+    return View(model);
   }
 
   [HttpPost]
   [ValidateAntiForgeryToken]
-  public async Task<IActionResult> Edit(int id, Workspace workspace)
+  public async Task<IActionResult> Edit(int id, WorkspaceEditViewModel model)
   {
-    if (id != workspace.Id)
+    if (id != model.Id)
       return NotFound();
 
     if (!ModelState.IsValid)
-      return View(workspace);
+      return View(model);
 
     var existingWorkspace = await _workspaceService.GetWorkspaceByIdAsync(id);
 
@@ -110,8 +135,17 @@ public class WorkspaceController : Controller
     if (!_workspaceService.CanUserAccessWorkspace(existingWorkspace, user.Id, isAdmin))
       return Unauthorized();
 
-    existingWorkspace.Name = workspace.Name;
-    await _workspaceService.UpdateWorkspaceAsync(existingWorkspace);
+    existingWorkspace.Name = model.Name;
+
+    try
+    {
+      await _workspaceService.UpdateWorkspaceAsync(existingWorkspace);
+    }
+    catch (DbUpdateException ex) when (IsDuplicateWorkspaceName(ex))
+    {
+      ModelState.AddModelError(nameof(model.Name), "You already have a workspace with this name.");
+      return View(model);
+    }
 
     return RedirectToAction(nameof(Index));
   }

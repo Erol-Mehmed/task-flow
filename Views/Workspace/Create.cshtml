@@ -10,10 +10,11 @@
   <div class="card-body">
     <form asp-action="Create" method="post" class="vstack gap-3">
       @Html.AntiForgeryToken()
+      <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
       <div>
         <label asp-for="Name" class="form-label">Name</label>
-        <input asp-for="Name" class="form-control" />
+        <input asp-for="Name" class="form-control"/>
         <span asp-validation-for="Name" class="text-danger"></span>
       </div>
 
@@ -26,5 +27,5 @@
 </div>
 
 @section Scripts {
-  <partial name="_ValidationScriptsPartial" />
+  <partial name="_ValidationScriptsPartial"/>
 }

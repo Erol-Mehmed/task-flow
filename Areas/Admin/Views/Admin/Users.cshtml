@@ -19,6 +19,7 @@
       <tr>
         <th>Email</th>
         <th>Name</th>
+        <th>Role</th>
         <th>Actions</th>
       </tr>
       </thead>
@@ -28,6 +29,7 @@
         <tr>
           <td>@user.Email</td>
           <td>@user.FirstName @user.LastName</td>
+          <td>@(ViewBag.UserRoles?[user.Id] ?? "-")</td>
           <td>
             <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-sm btn-warning">Edit</a>
 

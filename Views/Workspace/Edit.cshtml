@@ -1,4 +1,4 @@
-@model task_flow.Models.Workspace.Workspace
+@model task_flow.Models.Workspace.WorkspaceEditViewModel
 
 @{
   ViewData["Title"] = "Edit Workspace";
@@ -10,6 +10,7 @@
   <div class="card-body">
     <form asp-action="Edit" method="post" class="vstack gap-3">
       @Html.AntiForgeryToken()
+      <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
       <input type="hidden" asp-for="Id"/>
 

@@ -20,10 +20,21 @@ public class AdminController : Controller
 
   public IActionResult Index() => View();
 
-  public IActionResult Users()
+  public async Task<IActionResult> Users()
   {
     var users = _adminService.GetAllUsers();
     ViewBag.CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+    var userRoles = new Dictionary<string, string>();
+
+    foreach (var user in users)
+    {
+      var editModel = await _adminService.GetUserForEditAsync(user.Id);
+      userRoles[user.Id] = editModel?.Role ?? "-";
+    }
+
+    ViewBag.UserRoles = userRoles;
+
     return View(users);
   }
 
