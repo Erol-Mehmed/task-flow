@@ -6,7 +6,10 @@
 
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
   <h2 class="mb-0">Task Details</h2>
-  <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+  <a asp-action="Edit"
+     asp-route-id="@Model.Id"
+     asp-route-returnUrl="@Context.Request.Path@Context.Request.QueryString"
+     class="btn btn-warning">Edit</a>
 </div>
 
 <div class="card shadow-sm app-card">

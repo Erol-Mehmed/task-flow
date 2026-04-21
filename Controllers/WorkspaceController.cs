@@ -39,18 +39,26 @@ public class WorkspaceController : Controller
       return false;
 
     return pgEx.SqlState == PostgresErrorCodes.UniqueViolation &&
-           pgEx.ConstraintName == "IX_Workspace_UserId_Name";
+           pgEx.ConstraintName == "IX_Workspace_Name";
   }
 
-  public async Task<IActionResult> Index()
+  public async Task<IActionResult> Index(int page = 1)
   {
-    var (user, isAdmin) = await GetUserContextAsync();
+    var (user, _) = await GetUserContextAsync();
 
     if (user == null)
       return Unauthorized();
 
-    var workspaces = await _workspaceService.GetIndexWorkspacesAsync(user.Id, isAdmin);
-    return View(workspaces);
+    const int pageSize = 10;
+    if (page < 1)
+      page = 1;
+
+    var result = await _workspaceService.GetIndexWorkspacesAsync(page, pageSize);
+
+    ViewBag.CurrentPage = page;
+    ViewBag.TotalPages = result.TotalPages;
+
+    return View(result.Workspaces);
   }
 
   public IActionResult Create()
@@ -81,7 +89,7 @@ public class WorkspaceController : Controller
     }
     catch (DbUpdateException ex) when (IsDuplicateWorkspaceName(ex))
     {
-      ModelState.AddModelError(nameof(model.Name), "You already have a workspace with this name.");
+      ModelState.AddModelError(nameof(model.Name), "A workspace with this name already exists.");
       return View(model);
     }
 
@@ -100,7 +108,7 @@ public class WorkspaceController : Controller
     if (user == null)
       return Unauthorized();
 
-    if (!_workspaceService.CanUserAccessWorkspace(workspace, user.Id, isAdmin))
+    if (!_workspaceService.CanUserManageWorkspace(workspace, user.Id, isAdmin))
       return Unauthorized();
 
     var model = new WorkspaceEditViewModel
@@ -132,7 +140,7 @@ public class WorkspaceController : Controller
     if (user == null)
       return Unauthorized();
 
-    if (!_workspaceService.CanUserAccessWorkspace(existingWorkspace, user.Id, isAdmin))
+    if (!_workspaceService.CanUserManageWorkspace(existingWorkspace, user.Id, isAdmin))
       return Unauthorized();
 
     existingWorkspace.Name = model.Name;
@@ -143,7 +151,7 @@ public class WorkspaceController : Controller
     }
     catch (DbUpdateException ex) when (IsDuplicateWorkspaceName(ex))
     {
-      ModelState.AddModelError(nameof(model.Name), "You already have a workspace with this name.");
+      ModelState.AddModelError(nameof(model.Name), "A workspace with this name already exists.");
       return View(model);
     }
 

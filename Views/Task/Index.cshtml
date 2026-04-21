@@ -53,7 +53,10 @@
       <td>@(item.Workspace?.Name ?? "-")</td>
       
       <td>
-        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
+        <a asp-action="Edit"
+           asp-route-id="@item.Id"
+           asp-route-returnUrl="@Context.Request.Path@Context.Request.QueryString"
+           class="btn btn-sm btn-warning">Edit</a>
 
         <button type="button"
                 class="btn btn-sm btn-danger"

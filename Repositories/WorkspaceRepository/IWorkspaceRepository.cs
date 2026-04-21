@@ -4,7 +4,7 @@ namespace task_flow.Repositories.WorkspaceRepository;
 
 public interface IWorkspaceRepository
 {
-  Task<List<Workspace>> GetAllForIndexAsync(string userId, bool isAdmin);
+  Task<(List<Workspace> Workspaces, int TotalPages)> GetPagedForIndexAsync(int page, int pageSize);
   Task<Workspace?> GetByIdAsync(int id);
   Task AddAsync(Workspace workspace);
   Task SaveChangesAsync();

@@ -19,9 +19,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     base.OnModelCreating(modelBuilder);
 
     modelBuilder.Entity<task_flow.Models.Workspace.Workspace>()
-      .HasIndex(w => new { w.UserId, w.Name })
+      .HasIndex(w => w.Name)
       .IsUnique()
-      .HasDatabaseName("IX_Workspace_UserId_Name");
+      .HasDatabaseName("IX_Workspace_Name");
 
     modelBuilder.Entity<TaskItem>()
       .HasIndex(t => new { t.WorkspaceId, t.Title })

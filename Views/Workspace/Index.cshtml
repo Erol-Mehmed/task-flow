@@ -2,6 +2,8 @@
 
 @{
   ViewData["Title"] = "Workspaces";
+  var currentPage = (int)(ViewBag.CurrentPage ?? 1);
+  var totalPages = (int)(ViewBag.TotalPages ?? 1);
 }
 
 <h2>Workspaces</h2>
@@ -47,3 +49,19 @@
 </table>
 
 @await Html.PartialAsync("~/Views/Shared/Partials/_DeleteWorkspaceConfirmModal.cshtml")
+
+<nav class="mt-4 d-flex justify-content-center" aria-label="Workspace pagination">
+  <ul class="pagination mb-0">
+    @for (int i = 1; i <= totalPages; i++)
+    {
+      var pageNumber = i;
+      <li class="page-item @(pageNumber == currentPage ? "active" : "")">
+        <a class="page-link"
+           asp-action="Index"
+           asp-route-page="@pageNumber">
+          @pageNumber
+        </a>
+      </li>
+    }
+  </ul>
+</nav>

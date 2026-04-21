@@ -13,17 +13,27 @@ public class WorkspaceRepository : IWorkspaceRepository
     _context = context;
   }
 
-  public async Task<List<Workspace>> GetAllForIndexAsync(string userId, bool isAdmin)
+  public async Task<(List<Workspace> Workspaces, int TotalPages)> GetPagedForIndexAsync(int page, int pageSize)
   {
     IQueryable<Workspace> query = _context.Workspaces
       .Include(w => w.User);
 
-    if (!isAdmin)
-      query = query.Where(w => w.UserId == userId);
-
-    return await query
+    query = query
       .OrderBy(w => w.Name)
+      .ThenBy(w => w.Id);
+
+    var totalItems = await query.CountAsync();
+
+    var workspaces = await query
+      .Skip((page - 1) * pageSize)
+      .Take(pageSize)
       .ToListAsync();
+
+    var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+    if (totalPages == 0)
+      totalPages = 1;
+
+    return (workspaces, totalPages);
   }
 
   public async Task<Workspace?> GetByIdAsync(int id)

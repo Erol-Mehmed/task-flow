@@ -12,9 +12,9 @@ public class WorkspaceService : IWorkspaceService
     _workspaceRepository = workspaceRepository;
   }
 
-  public async Task<List<Workspace>> GetIndexWorkspacesAsync(string userId, bool isAdmin)
+  public async Task<(List<Workspace> Workspaces, int TotalPages)> GetIndexWorkspacesAsync(int page, int pageSize)
   {
-    return await _workspaceRepository.GetAllForIndexAsync(userId, isAdmin);
+    return await _workspaceRepository.GetPagedForIndexAsync(page, pageSize);
   }
 
   public async Task<Workspace?> GetWorkspaceByIdAsync(int id)
@@ -23,6 +23,11 @@ public class WorkspaceService : IWorkspaceService
   }
 
   public bool CanUserAccessWorkspace(Workspace workspace, string userId, bool isAdmin)
+  {
+    return true;
+  }
+
+  public bool CanUserManageWorkspace(Workspace workspace, string userId, bool isAdmin)
   {
     return isAdmin || workspace.UserId == userId;
   }
@@ -47,7 +52,7 @@ public class WorkspaceService : IWorkspaceService
     if (workspace == null)
       throw new KeyNotFoundException("Workspace not found.");
 
-    if (!CanUserAccessWorkspace(workspace, userId, isAdmin))
+    if (!CanUserManageWorkspace(workspace, userId, isAdmin))
       throw new UnauthorizedAccessException("User cannot delete this workspace.");
 
     _workspaceRepository.Remove(workspace);

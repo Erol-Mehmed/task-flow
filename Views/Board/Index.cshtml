@@ -176,7 +176,8 @@
       return;
     }
 
-    window.location.href = editTaskBaseUrl + "/" + currentTaskId;
+    const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+    window.location.href = editTaskBaseUrl + "/" + currentTaskId + "?returnUrl=" + returnUrl;
   }
 
   function deleteTask() {
