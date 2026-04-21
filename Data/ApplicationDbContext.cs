@@ -12,7 +12,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
   }
 
   public DbSet<TaskItem> Tasks { get; set; }
-  public DbSet<Comment> Comments { get; set; }
+  public DbSet<task_flow.Models.Comments.Comment> Comments { get; set; }
+  public DbSet<task_flow.Models.Tags.Tag> Tags { get; set; }
+  public DbSet<task_flow.Models.Tags.TaskTag> TaskTags { get; set; }
   public DbSet<task_flow.Models.Workspace.Workspace> Workspaces { get; set; }
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -35,14 +37,34 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
       .HasForeignKey(t => t.WorkspaceId)
       .OnDelete(DeleteBehavior.Cascade);
 
-    modelBuilder.Entity<Comment>()
+    modelBuilder.Entity<task_flow.Models.Comments.Comment>()
       .HasOne(c => c.TaskItem)
       .WithMany(t => t.Comments)
       .HasForeignKey(c => c.TaskItemId)
       .OnDelete(DeleteBehavior.Cascade);
 
-    modelBuilder.Entity<Comment>()
+    modelBuilder.Entity<task_flow.Models.Comments.Comment>()
       .HasIndex(c => new { c.TaskItemId, c.CreatedAt })
       .HasDatabaseName("IX_Comment_TaskItemId_CreatedAt");
+
+    modelBuilder.Entity<task_flow.Models.Tags.Tag>()
+      .HasIndex(t => t.Name)
+      .IsUnique()
+      .HasDatabaseName("IX_Tag_Name");
+
+    modelBuilder.Entity<task_flow.Models.Tags.TaskTag>()
+      .HasKey(tt => new { tt.TaskItemId, tt.TagId });
+
+    modelBuilder.Entity<task_flow.Models.Tags.TaskTag>()
+      .HasOne(tt => tt.TaskItem)
+      .WithMany(t => t.TaskTags)
+      .HasForeignKey(tt => tt.TaskItemId)
+      .OnDelete(DeleteBehavior.Cascade);
+
+    modelBuilder.Entity<task_flow.Models.Tags.TaskTag>()
+      .HasOne(tt => tt.Tag)
+      .WithMany(t => t.TaskTags)
+      .HasForeignKey(tt => tt.TagId)
+      .OnDelete(DeleteBehavior.Cascade);
   }
 }

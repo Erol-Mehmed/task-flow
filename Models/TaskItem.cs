@@ -18,5 +18,6 @@ public class TaskItem
   [MaxLength(36)] public string? UserId { get; set; }
   public ApplicationUser? User { get; set; }
 
-  public ICollection<Comment> Comments { get; set; } = new List<Comment>();
+  public ICollection<task_flow.Models.Comments.Comment> Comments { get; set; } = new List<task_flow.Models.Comments.Comment>();
+  public ICollection<task_flow.Models.Tags.TaskTag> TaskTags { get; set; } = new List<task_flow.Models.Tags.TaskTag>();
 }

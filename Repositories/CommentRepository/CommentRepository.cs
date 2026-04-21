@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using task_flow.Data;
-using task_flow.Models;
+using task_flow.Models.Comments;
 
 namespace task_flow.Repositories.CommentRepository;
 
@@ -32,4 +32,3 @@ public class CommentRepository : ICommentRepository
     await _context.SaveChangesAsync();
   }
 }
-

@@ -2,7 +2,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using task_flow.Models;
+using task_flow.Models.Comments;
+using task_flow.Models.Tags;
 using task_flow.Services.CommentService;
+using task_flow.Services.TagService;
 using task_flow.Services.TaskService;
 using task_flow.Services.WorkspaceService;
 
@@ -13,17 +16,20 @@ public class TaskController : Controller
 {
   private readonly ITaskService _taskService;
   private readonly ICommentService _commentService;
+  private readonly ITagService _tagService;
   private readonly IWorkspaceService _workspaceService;
   private readonly UserManager<ApplicationUser> _userManager;
 
   public TaskController(
     ITaskService taskService,
     ICommentService commentService,
+    ITagService tagService,
     IWorkspaceService workspaceService,
     UserManager<ApplicationUser> userManager)
   {
     _taskService = taskService;
     _commentService = commentService;
+    _tagService = tagService;
     _workspaceService = workspaceService;
     _userManager = userManager;
   }
@@ -237,12 +243,15 @@ public class TaskController : Controller
       return Unauthorized();
 
     var comments = await _commentService.GetCommentsForTaskAsync(task.Id);
+    var tags = await _tagService.GetTagsForTaskAsync(task.Id);
 
     var model = new TaskDetailsViewModel
     {
       Task = task,
       Comments = comments,
-      NewComment = new CommentCreateViewModel { TaskId = task.Id }
+      NewComment = new CommentCreateViewModel { TaskId = task.Id },
+      Tags = tags,
+      NewTag = new TagCreateViewModel { TaskId = task.Id }
     };
 
     return View(model);

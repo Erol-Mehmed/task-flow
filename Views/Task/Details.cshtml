@@ -43,6 +43,40 @@
 
 <div class="card shadow-sm app-card mt-4">
   <div class="card-body">
+    <h5 class="mb-3">Tags</h5>
+
+    @if (!Model.Tags.Any())
+    {
+      <p class="text-muted mb-3">No tags yet.</p>
+    }
+    else
+    {
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        @foreach (var tag in Model.Tags)
+        {
+          <span class="badge bg-secondary">@tag.Name</span>
+        }
+      </div>
+    }
+
+    <form asp-controller="Tag" asp-action="Create" method="post" class="vstack gap-2">
+      @Html.AntiForgeryToken()
+      <input type="hidden" name="TaskId" value="@Model.Task.Id" />
+      <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+
+      <div>
+        <input name="Name" class="form-control" maxlength="50" required placeholder="Add a tag (e.g. backend)" />
+      </div>
+
+      <div>
+        <button type="submit" class="btn btn-outline-primary">Add Tag</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card shadow-sm app-card mt-4">
+  <div class="card-body">
     <h5 class="mb-3">Add Comment</h5>
 
     <form asp-controller="Comment" asp-action="Create" method="post" class="vstack gap-3">

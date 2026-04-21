@@ -2,32 +2,32 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using task_flow.Models;
-using task_flow.Models.Comments;
-using task_flow.Services.CommentService;
+using task_flow.Models.Tags;
+using task_flow.Services.TagService;
 using task_flow.Services.TaskService;
 
 namespace task_flow.Controllers;
 
 [Authorize]
-public class CommentController : Controller
+public class TagController : Controller
 {
-  private readonly ICommentService _commentService;
+  private readonly ITagService _tagService;
   private readonly ITaskService _taskService;
   private readonly UserManager<ApplicationUser> _userManager;
 
-  public CommentController(
-    ICommentService commentService,
+  public TagController(
+    ITagService tagService,
     ITaskService taskService,
     UserManager<ApplicationUser> userManager)
   {
-    _commentService = commentService;
+    _tagService = tagService;
     _taskService = taskService;
     _userManager = userManager;
   }
 
   [HttpPost]
   [ValidateAntiForgeryToken]
-  public async Task<IActionResult> Create(CommentCreateViewModel model, string? returnUrl)
+  public async Task<IActionResult> Create(TagCreateViewModel model, string? returnUrl)
   {
     if (!ModelState.IsValid)
       return RedirectToAction("Details", "Task", new { id = model.TaskId });
@@ -47,7 +47,7 @@ public class CommentController : Controller
     if (!_taskService.CanUserAccessTask(task, user.Id, isAdmin))
       return Unauthorized();
 
-    await _commentService.AddCommentAsync(model.TaskId, user.Id, model.Content);
+    await _tagService.AddTagToTaskAsync(model.TaskId, model.Name);
 
     if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
       return LocalRedirect(returnUrl);
@@ -55,3 +55,5 @@ public class CommentController : Controller
     return RedirectToAction("Details", "Task", new { id = model.TaskId });
   }
 }
+
+

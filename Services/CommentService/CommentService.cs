@@ -1,4 +1,4 @@
-using task_flow.Models;
+using task_flow.Models.Comments;
 using task_flow.Repositories.CommentRepository;
 
 namespace task_flow.Services.CommentService;
@@ -33,4 +33,3 @@ public class CommentService : ICommentService
     await _commentRepository.SaveChangesAsync();
   }
 }
-

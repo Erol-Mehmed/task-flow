@@ -1,4 +1,4 @@
-using task_flow.Models;
+using task_flow.Models.Comments;
 
 namespace task_flow.Repositories.CommentRepository;
 
@@ -8,4 +8,3 @@ public interface ICommentRepository
   Task AddAsync(Comment comment);
   Task SaveChangesAsync();
 }
-
