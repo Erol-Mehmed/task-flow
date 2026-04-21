@@ -4,7 +4,7 @@ namespace task_flow.Repositories.TaskRepository;
 
 public interface ITaskRepository
 {
-  IQueryable<TaskItem> GetUserTasks(string userId);
+  IQueryable<TaskItem> GetVisibleTasks();
   Task<TaskItem?> GetByIdAsync(int id);
   Task<IEnumerable<TaskItem>> GetAllAsync(); // For Admin
   Task<TaskItem> CreateAsync(TaskItem task);

@@ -13,11 +13,10 @@ public class TaskRepository : ITaskRepository
     _context = context;
   }
 
-  public IQueryable<TaskItem> GetUserTasks(string userId)
+  public IQueryable<TaskItem> GetVisibleTasks()
   {
     return _context.Tasks
-      .Include(t => t.Workspace)
-      .Where(t => t.UserId == userId);
+      .Include(t => t.Workspace);
   }
 
   public async Task<TaskItem?> GetByIdAsync(int id)

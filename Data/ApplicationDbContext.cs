@@ -12,6 +12,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
   }
 
   public DbSet<TaskItem> Tasks { get; set; }
+  public DbSet<Comment> Comments { get; set; }
   public DbSet<task_flow.Models.Workspace.Workspace> Workspaces { get; set; }
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -33,5 +34,15 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
       .WithMany(w => w.Tasks)
       .HasForeignKey(t => t.WorkspaceId)
       .OnDelete(DeleteBehavior.Cascade);
+
+    modelBuilder.Entity<Comment>()
+      .HasOne(c => c.TaskItem)
+      .WithMany(t => t.Comments)
+      .HasForeignKey(c => c.TaskItemId)
+      .OnDelete(DeleteBehavior.Cascade);
+
+    modelBuilder.Entity<Comment>()
+      .HasIndex(c => new { c.TaskItemId, c.CreatedAt })
+      .HasDatabaseName("IX_Comment_TaskItemId_CreatedAt");
   }
 }

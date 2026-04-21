@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using task_flow.Models;
 using task_flow.Repositories.TaskRepository;
 using TaskItem = task_flow.Models.TaskItem;
 
@@ -16,15 +15,18 @@ public class TaskService : ITaskService
 
   public bool CanUserAccessTask(TaskItem task, string userId, bool isAdmin)
   {
+    if (task.WorkspaceId.HasValue)
+      return true;
+
     return task.UserId == userId || isAdmin;
   }
 
   public async Task<IEnumerable<TaskItem>> GetIndexTasksAsync(string userId, bool isAdmin)
   {
-    if (isAdmin)
-      return await _repo.GetAllAsync();
+    _ = userId;
+    _ = isAdmin;
 
-    return await _repo.GetUserTasks(userId).ToListAsync();
+    return await _repo.GetAllAsync();
   }
 
   public async Task<TaskItem?> GetTaskByIdAsync(int id)
@@ -66,7 +68,9 @@ public class TaskService : ITaskService
     int page,
     int? workspaceId = null)
   {
-    var query = _repo.GetUserTasks(userId);
+    _ = userId;
+
+    var query = _repo.GetVisibleTasks();
 
     if (workspaceId.HasValue)
       query = query.Where(t => t.WorkspaceId == workspaceId.Value);

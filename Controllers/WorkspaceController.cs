@@ -49,7 +49,7 @@ public class WorkspaceController : Controller
     if (user == null)
       return Unauthorized();
 
-    const int pageSize = 10;
+    const int pageSize = 6;
     if (page < 1)
       page = 1;
 

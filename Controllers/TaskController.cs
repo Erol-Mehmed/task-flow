@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using task_flow.Models;
+using task_flow.Services.CommentService;
 using task_flow.Services.TaskService;
 using task_flow.Services.WorkspaceService;
 
@@ -11,15 +12,18 @@ namespace task_flow.Controllers;
 public class TaskController : Controller
 {
   private readonly ITaskService _taskService;
+  private readonly ICommentService _commentService;
   private readonly IWorkspaceService _workspaceService;
   private readonly UserManager<ApplicationUser> _userManager;
 
   public TaskController(
     ITaskService taskService,
+    ICommentService commentService,
     IWorkspaceService workspaceService,
     UserManager<ApplicationUser> userManager)
   {
     _taskService = taskService;
+    _commentService = commentService;
     _workspaceService = workspaceService;
     _userManager = userManager;
   }
@@ -232,7 +236,16 @@ public class TaskController : Controller
     if (!_taskService.CanUserAccessTask(task, user.Id, isAdmin))
       return Unauthorized();
 
-    return View(task);
+    var comments = await _commentService.GetCommentsForTaskAsync(task.Id);
+
+    var model = new TaskDetailsViewModel
+    {
+      Task = task,
+      Comments = comments,
+      NewComment = new CommentCreateViewModel { TaskId = task.Id }
+    };
+
+    return View(model);
   }
 
   [HttpPost]
