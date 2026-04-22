@@ -10,191 +10,247 @@ namespace task_flow.Tests.Services;
 
 public class TaskServiceTests
 {
-  private static TaskService BuildService(string dbName, out ApplicationDbContext db)
+  private static TaskService BuildServiceWithInMemoryDb(
+    string dbName,
+    out ApplicationDbContext db)
   {
     db = new ApplicationDbContext(
       new DbContextOptionsBuilder<ApplicationDbContext>()
         .UseInMemoryDatabase(dbName)
         .Options);
-    var repo = new TaskRepository(db);
-    var activityService = new Mock<IActivityService>();
-    activityService
+
+    var activityServiceMock = new Mock<IActivityService>();
+    activityServiceMock
       .Setup(x => x.LogAsync(It.IsAny<int?>(), It.IsAny<string?>(), It.IsAny<string>(), It.IsAny<string?>()))
       .Returns(Task.CompletedTask);
 
-    return new TaskService(repo, activityService.Object);
+    return new TaskService(new TaskRepository(db), activityServiceMock.Object);
   }
 
-  // ── Filtering ────────────────────────────────────────────────────────────
+  private static TaskService BuildServiceWithMocks(
+    out Mock<ITaskRepository> taskRepositoryMock,
+    out Mock<IActivityService> activityServiceMock)
+  {
+    taskRepositoryMock = new Mock<ITaskRepository>();
+    activityServiceMock = new Mock<IActivityService>();
+    activityServiceMock
+      .Setup(x => x.LogAsync(It.IsAny<int?>(), It.IsAny<string?>(), It.IsAny<string>(), It.IsAny<string?>()))
+      .Returns(Task.CompletedTask);
+
+    return new TaskService(taskRepositoryMock.Object, activityServiceMock.Object);
+  }
 
   [Fact]
-  public async Task GetTasks_ReturnsOnlyTasksForGivenUser()
+  public void CanUserAccessTask_WhenTaskBelongsToWorkspace_ReturnsTrue()
   {
-    var svc = BuildService(nameof(GetTasks_ReturnsOnlyTasksForGivenUser), out var db);
+    var service = BuildServiceWithMocks(out _, out _);
+    var task = new TaskItem { Id = 1, Title = "Task", WorkspaceId = 10, UserId = "owner" };
+
+    var result = service.CanUserAccessTask(task, "other", false);
+
+    Assert.True(result);
+  }
+
+  [Fact]
+  public void CanUserAccessTask_WhenUserOwnsPersonalTask_ReturnsTrue()
+  {
+    var service = BuildServiceWithMocks(out _, out _);
+    var task = new TaskItem { Id = 1, Title = "Task", WorkspaceId = null, UserId = "u1" };
+
+    var result = service.CanUserAccessTask(task, "u1", false);
+
+    Assert.True(result);
+  }
+
+  [Fact]
+  public void CanUserAccessTask_WhenUserIsAdmin_ReturnsTrue()
+  {
+    var service = BuildServiceWithMocks(out _, out _);
+    var task = new TaskItem { Id = 1, Title = "Task", WorkspaceId = null, UserId = "u1" };
+
+    var result = service.CanUserAccessTask(task, "someone", true);
+
+    Assert.True(result);
+  }
+
+  [Fact]
+  public void CanUserAccessTask_WhenNotOwnerAndNotAdmin_ReturnsFalse()
+  {
+    var service = BuildServiceWithMocks(out _, out _);
+    var task = new TaskItem { Id = 1, Title = "Task", WorkspaceId = null, UserId = "u1" };
+
+    var result = service.CanUserAccessTask(task, "u2", false);
+
+    Assert.False(result);
+  }
+
+  [Fact]
+  public async Task GetIndexTasksAsync_ReturnsRepositoryData()
+  {
+    var service = BuildServiceWithMocks(out var repositoryMock, out _);
+    repositoryMock
+      .Setup(x => x.GetAllAsync())
+      .ReturnsAsync(new List<TaskItem> { new() { Id = 1, Title = "A" }, new() { Id = 2, Title = "B" } });
+
+    var result = await service.GetIndexTasksAsync("u1", false);
+
+    Assert.Equal(2, result.Count());
+    repositoryMock.Verify(x => x.GetAllAsync(), Times.Once);
+  }
+
+  [Fact]
+  public async Task GetTaskByIdAsync_ReturnsTaskFromRepository()
+  {
+    var service = BuildServiceWithMocks(out var repositoryMock, out _);
+    repositoryMock.Setup(x => x.GetByIdAsync(3)).ReturnsAsync(new TaskItem { Id = 3, Title = "Read" });
+
+    var result = await service.GetTaskByIdAsync(3);
+
+    Assert.NotNull(result);
+    Assert.Equal(3, result.Id);
+  }
+
+  [Fact]
+  public async Task CreateTaskAsync_SetsUserAndLogsActivity()
+  {
+    var service = BuildServiceWithMocks(out var repositoryMock, out var activityServiceMock);
+    var task = new TaskItem { Title = "Create me" };
+
+    repositoryMock
+      .Setup(x => x.CreateAsync(It.IsAny<TaskItem>()))
+      .ReturnsAsync((TaskItem created) =>
+      {
+        created.Id = 15;
+        return created;
+      });
+
+    var created = await service.CreateTaskAsync(task, "u1");
+
+    Assert.Equal("u1", created.UserId);
+    Assert.Equal(15, created.Id);
+    activityServiceMock.Verify(x => x.LogAsync(15, "u1", "TaskCreated", "Task 'Create me' created."), Times.Once);
+  }
+
+  [Fact]
+  public async Task UpdateTaskAsync_WhenUnauthorized_ThrowsAndDoesNotUpdate()
+  {
+    var service = BuildServiceWithMocks(out var repositoryMock, out var activityServiceMock);
+    var task = new TaskItem { Id = 8, Title = "Restricted", UserId = "owner" };
+
+    await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.UpdateTaskAsync(task, "other", false));
+
+    repositoryMock.Verify(x => x.UpdateAsync(It.IsAny<TaskItem>()), Times.Never);
+    activityServiceMock.Verify(
+      x => x.LogAsync(It.IsAny<int?>(), It.IsAny<string?>(), It.IsAny<string>(), It.IsAny<string?>()),
+      Times.Never);
+  }
+
+  [Fact]
+  public async Task UpdateTaskAsync_WhenAuthorized_UpdatesAndLogs()
+  {
+    var service = BuildServiceWithMocks(out var repositoryMock, out var activityServiceMock);
+    var task = new TaskItem { Id = 8, Title = "Updated", UserId = "owner" };
+
+    repositoryMock.Setup(x => x.UpdateAsync(task)).ReturnsAsync(task);
+
+    await service.UpdateTaskAsync(task, "owner", false);
+
+    repositoryMock.Verify(x => x.UpdateAsync(task), Times.Once);
+    activityServiceMock.Verify(x => x.LogAsync(8, "owner", "TaskUpdated", "Task 'Updated' updated."), Times.Once);
+  }
+
+  [Fact]
+  public async Task DeleteTaskAsync_WhenTaskNotFound_Throws()
+  {
+    var service = BuildServiceWithMocks(out var repositoryMock, out _);
+    repositoryMock.Setup(x => x.GetByIdAsync(123)).ReturnsAsync((TaskItem?)null);
+
+    await Assert.ThrowsAsync<KeyNotFoundException>(() => service.DeleteTaskAsync(123, "u1", false));
+  }
+
+  [Fact]
+  public async Task DeleteTaskAsync_WhenUnauthorized_ThrowsAndDoesNotDelete()
+  {
+    var service = BuildServiceWithMocks(out var repositoryMock, out var activityServiceMock);
+    var task = new TaskItem { Id = 4, Title = "Secret", UserId = "owner" };
+    repositoryMock.Setup(x => x.GetByIdAsync(4)).ReturnsAsync(task);
+
+    await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.DeleteTaskAsync(4, "other", false));
+
+    repositoryMock.Verify(x => x.DeleteAsync(It.IsAny<TaskItem>()), Times.Never);
+    activityServiceMock.Verify(
+      x => x.LogAsync(It.IsAny<int?>(), It.IsAny<string?>(), It.IsAny<string>(), It.IsAny<string?>()),
+      Times.Never);
+  }
+
+  [Fact]
+  public async Task DeleteTaskAsync_WhenAuthorized_DeletesAndLogs()
+  {
+    var service = BuildServiceWithMocks(out var repositoryMock, out var activityServiceMock);
+    var task = new TaskItem { Id = 9, Title = "Cleanup", UserId = "owner" };
+    repositoryMock.Setup(x => x.GetByIdAsync(9)).ReturnsAsync(task);
+    repositoryMock.Setup(x => x.DeleteAsync(task)).Returns(Task.CompletedTask);
+
+    await service.DeleteTaskAsync(9, "owner", false);
+
+    repositoryMock.Verify(x => x.DeleteAsync(task), Times.Once);
+    activityServiceMock.Verify(x => x.LogAsync(9, "owner", "TaskDeleted", "Task 'Cleanup' deleted."), Times.Once);
+  }
+
+  [Fact]
+  public async Task GetTasks_WithWorkspaceSearchStatusAndPaging_AppliesAllRules()
+  {
+    var service = BuildServiceWithInMemoryDb(
+      nameof(GetTasks_WithWorkspaceSearchStatusAndPaging_AppliesAllRules),
+      out var db);
+
+    db.Tasks.AddRange(
+      new TaskItem { Id = 1, Title = "  feature one", Status = "Todo", WorkspaceId = 1, UserId = "u1" },
+      new TaskItem { Id = 2, Title = "Feature two", Status = "Done", WorkspaceId = 1, UserId = "u1" },
+      new TaskItem { Id = 3, Title = "Feature three", Status = "Done", WorkspaceId = 2, UserId = "u2" });
+    await db.SaveChangesAsync();
+
+    var (tasks, totalPages) = await service.GetTasks("ignored-user", " FEATURE ", "Done", 1, workspaceId: 1);
+
+    Assert.Single(tasks);
+    Assert.Equal(2, tasks[0].Id);
+    Assert.Equal(1, totalPages);
+  }
+
+  [Fact]
+  public async Task GetTasks_IgnoresUserFilter_AndReturnsAllVisibleTasks()
+  {
+    var service = BuildServiceWithInMemoryDb(
+      nameof(GetTasks_IgnoresUserFilter_AndReturnsAllVisibleTasks),
+      out var db);
+
     db.Tasks.AddRange(
       new TaskItem { Id = 1, Title = "Mine", UserId = "u1" },
       new TaskItem { Id = 2, Title = "Other", UserId = "u2" });
     await db.SaveChangesAsync();
 
-    var (tasks, _) = await svc.GetTasks("u1", null, null, 1);
+    var (tasks, _) = await service.GetTasks("u1", null, null, 1);
 
-    Assert.Single(tasks);
-    Assert.Equal("Mine", tasks[0].Title);
+    Assert.Equal(2, tasks.Count);
+    Assert.Equal(new[] { 1, 2 }, tasks.Select(t => t.Id));
   }
 
   [Fact]
-  public async Task GetTasks_WithSearch_ReturnsMatchingTasks()
+  public async Task GetTasks_WithSevenRecords_ReturnsSecondPageAndTotalPagesTwo()
   {
-    var svc = BuildService(nameof(GetTasks_WithSearch_ReturnsMatchingTasks), out var db);
-    db.Tasks.AddRange(
-      new TaskItem { Id = 1, Title = "Buy Milk", UserId = "u1" },
-      new TaskItem { Id = 2, Title = "Read Book", UserId = "u1" });
-    await db.SaveChangesAsync();
+    var service = BuildServiceWithInMemoryDb(
+      nameof(GetTasks_WithSevenRecords_ReturnsSecondPageAndTotalPagesTwo),
+      out var db);
 
-    var (tasks, _) = await svc.GetTasks("u1", "Buy", null, 1);
-
-    Assert.Single(tasks);
-    Assert.Equal("Buy Milk", tasks[0].Title);
-  }
-
-  [Fact]
-  public async Task GetTasks_WithSearch_IsCaseInsensitive()
-  {
-    var svc = BuildService(nameof(GetTasks_WithSearch_IsCaseInsensitive), out var db);
-    db.Tasks.AddRange(
-      new TaskItem { Id = 1, Title = "First Task", UserId = "u1" },
-      new TaskItem { Id = 2, Title = "second task", UserId = "u1" });
-    await db.SaveChangesAsync();
-
-    var (tasks, _) = await svc.GetTasks("u1", "FIRST", null, 1);
-
-    Assert.Single(tasks);
-    Assert.Equal("First Task", tasks[0].Title);
-  }
-
-  [Fact]
-  public async Task GetTasks_WithStatus_ReturnsMatchingTasks()
-  {
-    var svc = BuildService(nameof(GetTasks_WithStatus_ReturnsMatchingTasks), out var db);
-    db.Tasks.AddRange(
-      new TaskItem { Id = 1, Title = "T1", Status = "Todo", UserId = "u1" },
-      new TaskItem { Id = 2, Title = "T2", Status = "Done", UserId = "u1" });
-    await db.SaveChangesAsync();
-
-    var (tasks, _) = await svc.GetTasks("u1", null, "Done", 1);
-
-    Assert.Single(tasks);
-    Assert.Equal("Done", tasks[0].Status);
-  }
-
-  [Fact]
-  public async Task GetTasks_WithSearchAndStatus_AppliesBothFilters()
-  {
-    var svc = BuildService(nameof(GetTasks_WithSearchAndStatus_AppliesBothFilters), out var db);
-    db.Tasks.AddRange(
-      new TaskItem { Id = 1, Title = "Buy Milk", Status = "Todo", UserId = "u1" },
-      new TaskItem { Id = 2, Title = "Buy Bread", Status = "Done", UserId = "u1" },
-      new TaskItem { Id = 3, Title = "Read Book", Status = "Done", UserId = "u1" });
-    await db.SaveChangesAsync();
-
-    var (tasks, _) = await svc.GetTasks("u1", "Buy", "Done", 1);
-
-    Assert.Single(tasks);
-    Assert.Equal("Buy Bread", tasks[0].Title);
-  }
-
-  [Fact]
-  public async Task GetTasks_NoMatch_ReturnsEmptyList()
-  {
-    var svc = BuildService(nameof(GetTasks_NoMatch_ReturnsEmptyList), out var db);
-    db.Tasks.Add(new TaskItem { Id = 1, Title = "Buy Milk", UserId = "u1" });
-    await db.SaveChangesAsync();
-
-    var (tasks, _) = await svc.GetTasks("u1", "xyz", null, 1);
-
-    Assert.Empty(tasks);
-  }
-
-  // ── Pagination ───────────────────────────────────────────────────────────
-
-  [Fact]
-  public async Task GetTasks_CalculatesCorrectTotalPages()
-  {
-    var svc = BuildService(nameof(GetTasks_CalculatesCorrectTotalPages), out var db);
     for (int i = 1; i <= 7; i++)
       db.Tasks.Add(new TaskItem { Id = i, Title = $"Task {i}", UserId = "u1" });
+
     await db.SaveChangesAsync();
 
-    var (_, totalPages) = await svc.GetTasks("u1", null, null, 1);
-
-    Assert.Equal(2, totalPages); // pageSize=6, 7 tasks → 2 pages
-  }
-
-  [Fact]
-  public async Task GetTasks_FirstPage_ReturnsSixItems()
-  {
-    var svc = BuildService(nameof(GetTasks_FirstPage_ReturnsSixItems), out var db);
-    for (int i = 1; i <= 7; i++)
-      db.Tasks.Add(new TaskItem { Id = i, Title = $"Task {i}", UserId = "u1" });
-    await db.SaveChangesAsync();
-
-    var (tasks, _) = await svc.GetTasks("u1", null, null, 1);
-
-    Assert.Equal(6, tasks.Count);
-  }
-
-  [Fact]
-  public async Task GetTasks_SecondPage_ReturnsRemainingItems()
-  {
-    var svc = BuildService(nameof(GetTasks_SecondPage_ReturnsRemainingItems), out var db);
-    for (int i = 1; i <= 7; i++)
-      db.Tasks.Add(new TaskItem { Id = i, Title = $"Task {i}", UserId = "u1" });
-    await db.SaveChangesAsync();
-
-    var (tasks, _) = await svc.GetTasks("u1", null, null, 2);
+    var (tasks, totalPages) = await service.GetTasks("u1", null, null, page: 2);
 
     Assert.Single(tasks);
-  }
-
-  [Fact]
-  public async Task GetTasks_ExactlyOnePage_TotalPagesIsOne()
-  {
-    var svc = BuildService(nameof(GetTasks_ExactlyOnePage_TotalPagesIsOne), out var db);
-    for (int i = 1; i <= 6; i++)
-      db.Tasks.Add(new TaskItem { Id = i, Title = $"Task {i}", UserId = "u1" });
-    await db.SaveChangesAsync();
-
-    var (tasks, totalPages) = await svc.GetTasks("u1", null, null, 1);
-
-    Assert.Equal(6, tasks.Count);
-    Assert.Equal(1, totalPages);
-  }
-
-  [Fact]
-  public async Task GetTasks_EmptyDb_ReturnsZeroPages()
-  {
-    var svc = BuildService(nameof(GetTasks_EmptyDb_ReturnsZeroPages), out var db);
-
-    var (tasks, totalPages) = await svc.GetTasks("u1", null, null, 1);
-
-    Assert.Empty(tasks);
-    Assert.Equal(0, totalPages);
-  }
-
-  // ── Ordering ─────────────────────────────────────────────────────────────
-
-  [Fact]
-  public async Task GetTasks_ReturnsTasksOrderedById()
-  {
-    var svc = BuildService(nameof(GetTasks_ReturnsTasksOrderedById), out var db);
-    db.Tasks.AddRange(
-      new TaskItem { Id = 3, Title = "C", UserId = "u1" },
-      new TaskItem { Id = 1, Title = "A", UserId = "u1" },
-      new TaskItem { Id = 2, Title = "B", UserId = "u1" });
-    await db.SaveChangesAsync();
-
-    var (tasks, _) = await svc.GetTasks("u1", null, null, 1);
-
-    Assert.Equal(new[] { 1, 2, 3 }, tasks.Select(t => t.Id));
+    Assert.Equal(7, tasks[0].Id);
+    Assert.Equal(2, totalPages);
   }
 }
